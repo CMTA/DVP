@@ -1,0 +1,52 @@
+@startuml
+
+participant BX_Swiss order 10
+participant SettlementConverter order 20
+participant DLT2Pay order 30
+participant POT_SC order 40
+participant DvP_SC order 50
+participant DLT2Pay order 60
+participant DvP_Manager order 70
+participant AT_SC order 80
+
+
+
+BX_Swiss -> SettlementConverter : (1) [Type?] SettlementMessage
+
+SettlementConverter -> DLT2Pay : (2) [REST] orderPOT
+
+DLT2Pay -> POT_SC : (3) [SC] issuePOT
+
+POT_SC -> DvP_SC : (4a) [function] mint&transfer POT
+
+DvP_SC -> DvP_Manager : (4b) [Event] transfer
+
+DvP_Manager -> DvP_SC : (5) CheckDelivery
+
+DvP_SC -> AT_SC : (6) [function] TransferFromSender
+
+DvP_SC -> POT_SC : (7) [function] InitiatePayment
+
+POT_SC -> DLT2Pay : (8a) [Event] InitiatePayment
+
+POT_SC -> POT_SC : (8b) [function] Status PaymentInitiated
+
+DLT2Pay -> SIC : (9) [ext] InitiatePayment
+
+SIC -> DLT2Pay : (10) [ext] Payment Confirmed
+
+DLT2Pay -> POT_SC : (11a) [SC] ConfirmPayment
+
+POT_SC -> DvP_Manager : (11b) [Event] ConfirmPayment
+
+POT_SC -> POT_SC : (11c) [function] Status Payment Confirmed
+
+DvP_Manager -> DvP_SC : (12) [SC] ExecuteDelivery
+
+DvP_SC -> DvP_SC : (13a) [function] Status Payment Confirmed?
+
+DvP_SC -> POT_SC : (13b) [SC] Deactivate
+
+DvP_SC -> AT_SC : (13c) [SC] Transfer to receiver
+
+@enduml

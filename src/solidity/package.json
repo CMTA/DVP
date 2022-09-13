@@ -1,0 +1,27 @@
+{
+  "scripts": {
+    "prepare-abis-hardhat": "ts-node ./scripts/prepare_abis_hardhat.ts"
+  },
+  "author": "targens GmbH",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.7.1",
+    "@openzeppelin/contracts-upgradeable": "^4.7.1",
+    "hardhat-gas-reporter": "^1.0.8"
+  },
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.6",
+    "@nomiclabs/hardhat-solpp": "^2.0.1",
+    "@nomiclabs/hardhat-waffle": "^2.0.3",
+    "@types/chai": "^4.3.1",
+    "@types/mocha": "^9.1.1",
+    "@types/node": "^17.0.45",
+    "chai": "^4.3.6",
+    "ethereum-waffle": "^3.4.4",
+    "ethers": "^5.6.9",
+    "hardhat": "^2.9.9",
+    "ts-node": "^10.8.1",
+    "typescript": "^4.7.4"
+  }
+}

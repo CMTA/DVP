@@ -1,0 +1,12 @@
+**/node_modules/**
+.deps
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### Hardhat ###
+build/
+cache/
