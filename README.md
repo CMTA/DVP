@@ -88,6 +88,5 @@ Why the original `approve` function cannot be called from out tests is yet to be
 ## Intellectual property
 
 The code is copyright (c) Capital Market and Technology Association,
-2022, and is released under [Mozilla Public License
-2.0](./LICENSE.md).
+2022, and is released under [MIT License](./LICENSE.md).
 
