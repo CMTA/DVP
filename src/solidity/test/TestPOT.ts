@@ -163,7 +163,7 @@ describe("POT", function () {
     await expect(pot.connect(receiver).transferFrom(
       issuer.address,
       receiver.address,
-      tokenId)).to.be.revertedWith("ERC721: caller is not token owner nor approved");
+      tokenId)).to.be.revertedWith("ERC721: caller is not token owner nor approved"); // TODO as of "@openzeppelin/contracts": "^v4.8.0", the error message will be "ERC721: caller is not token owner or approved"
   });
 
   it("Token should be burned when sent to contract", async () => {
