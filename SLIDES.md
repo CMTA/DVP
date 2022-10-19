@@ -6,11 +6,11 @@ The DvP (Delivery versus Payment) smart contract (DVP.sol) interacts with an Ass
 
 #### Asset Token
 
-DVP.sol can interact with any smart contract that implements the `IERC20Upgradeable` interface, e.g. CMTA's CMTAT contract - see [CMTAT.md](CMTAT.md).
+DVP.sol can interact with any smart contract that implements the `IERC20Upgradeable` interface, e.g. CMTA's CMTAT contract.
 
 #### Payment Order Token
 
-targens provides a Payment Order Token (src/solidity/contracts/POT/POT.sol) that is agnostic of other contracts expect for the OpenZeppelin ones and logging support.
+targens provides a Payment Order Token (Interface: src/solidity/contracts/POT/IPOT.sol) that is agnostic of other contracts expect for the OpenZeppelin ones and logging support.
 
 It comes with its own test: TestPOT.ts
 
@@ -55,6 +55,7 @@ Assuming the Ganache instance being accessible locally, the smart contracts can 
 `npx hardhat deploy_all_contracts --network localhost`
 
 
+The `deploy_all_contracts` task writes the addresses of the newly deployed contracts into the file build/contracts.json, from which other tasks can read them.
 
 ## Testing
 
@@ -72,20 +73,12 @@ Apart from built-in tasks such as `compile` and `test`, hardhat allows the defin
 
 `npx hardhat` lists all available tasks.
 
-**Note** The code which these tasks execute accesses the previously deployed contracts. This means that the addresses that were output during deployment must be entered in scripts/test_dvp_setup.ts.
-
-
-
-TODO Tasks hier nochmal aufzählen?
-
 e.g.
 
 ```shell
 $ npx hardhat dvp_getVersion --network localhost
 D1
 ```
-
-
 
 
 
@@ -106,7 +99,7 @@ import "hardhat/console.sol";
 
 // #if LOG
 address receiver = IPOT(potAddress).getReceiver(tokenId);
-console.log("[DVP] receiverBalance:", CMTAT(assetTokenAddress).balanceOf(receiver));
+console.log("[DVP] receiverBalance:", IERC20(assetTokenAddress).balanceOf(receiver));
 // #endif
 ```
 
@@ -123,21 +116,4 @@ With the log statements, the code is slightly too large, as stated by this compi
 ```
 Warning: Contract code size is 24959 bytes and exceeds 24576 bytes (a limit introduced in Spurious Dragon). This contract may not be deployable on mainnet.
 ```
-
-Note: A similar warning is issued for the CMTAT.sol contract.
-
-
-
-### approve vs. increaseAllowance
-
-`ERC20Upgradeable.sol ` implements the functions `increaseAllowance` and `decreaseAllowance` with this comment:
-
-```solidity
-  * @dev Atomically increases [decreases] the allowance granted to `spender` by the caller.
-  *
-  * This is an alternative to {approve} that can be used as a mitigation for
-  * problems described in {IERC20-approve}.
-```
-
-Why the original `approve` function cannot be called from out tests is yet to be found out.
 
