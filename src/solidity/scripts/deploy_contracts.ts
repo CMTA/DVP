@@ -1,64 +1,64 @@
-import { ContractFactory, Contract } from "ethers";
+import { ContractFactory } from "ethers";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import * as fs from 'fs';
-import { hrtime } from "process";
+import { contracts_addresses_filename } from './config'
+import "@nomiclabs/hardhat-ethers";
+import '@openzeppelin/hardhat-upgrades';
 
 /**
- * Deploys DVP, POT and AT (CMTAT or ERC20) to the network configured via hardhat
+ * Deploys DVP-Contract to the network configured via hardhat.
  * @param hre
  */
-export async function deployAllContracts(hre: HardhatRuntimeEnvironment) {
-    let dvp = await deployDVP(hre)
-    let pot = await deployPOT(hre)
-    let cmtat = await deployCMTAT(hre)
-    let erc20 = await deployERC20(hre)
-
-    // Write contract addresses into JSON file.
-    // Can be used to determine contract addresses used during deployment via gitlab-ci
-    fs.writeFileSync(
-        "./build/contracts.json",
-        JSON.stringify({dvp: dvp.address, pot: pot.address, cmtat: cmtat.address, erc20: erc20.address}, null, 4))
+export async function deployDVP(hre: HardhatRuntimeEnvironment, single: boolean, pot_address: string) {
+    console.log("DVP will be initialized with POT at " + pot_address)
+    return await deployUpgradeableContract(hre, single, "cache/solpp-generated-contracts/DVP.sol:DVP", "DVP",
+        pot_address)
 }
 
-async function deployContract(hre: HardhatRuntimeEnvironment, contractName: string, name: string, ...args: Array<any>) {
-    let contractFactory: ContractFactory = await hre.ethers.getContractFactory(contractName)
-    let contract = await contractFactory.deploy(...args)
+/**
+ * Upgrades DVP-Contract to DVPv2 to the network configured via hardhat.
+ * @param hre
+ */
+export async function upgradeDVPtoV2(hre: HardhatRuntimeEnvironment) {
+    return await upgradeContract(hre, "cache/solpp-generated-contracts/DVPv2.sol:DVPv2", "DVP",
+        "0x5b1869D9A4C187F2EAa108f3062412ecf0526b24" // DVP address!
+        )
+}
+
+/**
+ * Upgrades an upgradeable contract.
+ * @param hre
+ * @param contractName syntax like "cache/solpp-generated-contracts/DVP.sol:DVP"
+ * @param name only for logging
+ */
+async function upgradeContract(hre: HardhatRuntimeEnvironment, contractName: string, name: string,
+        address: string) {
+    const contractFactory = await hre.ethers.getContractFactory(contractName)
+    const contract = await hre.upgrades.upgradeProxy(address, contractFactory)
     await contract.deployed()
 
-    console.log("Deployed " + name + " contract into " + hre.network.name + " network at address " + contract.address)
+    console.log("Upgraded " + name + " contract into " + hre.network.name + " network at address " + contract.address)
     return contract
 }
 
 /**
- * Deploys DVP-Contract to the network configured via hardhat
+ * Deploys an upgradeable contract.
  * @param hre
+ * @param single if true, only one contract is being deployed (only for logging)
+ * @param contractName syntax like "cache/solpp-generated-contracts/DVP.sol:DVP"
+ * @param name only for logging
+ * @param ...args optional initializer parameters
  */
-export async function deployDVP(hre: HardhatRuntimeEnvironment) {
-    return await deployContract(hre, "cache/solpp-generated-contracts/DVP.sol:DVP", "  DVP")
-}
+async function deployUpgradeableContract(hre: HardhatRuntimeEnvironment, single, contractName: string, name: string,
+        ...args: Array<any>) {
+    const contractFactory = await hre.ethers.getContractFactory(contractName);
+    const contract = await hre.upgrades.deployProxy(contractFactory, [...args], {
+        initializer: "initialize"});
+    await contract.deployed()
 
-/**
- * Deploys POT-Contract to the network configured via hardhat
- * @param hre
- */
-export async function deployPOT(hre: HardhatRuntimeEnvironment) {
-    // the variable argument must match the contract's constructor parameters
-    return await deployContract(hre, "cache/solpp-generated-contracts/POT/POT.sol:POT", "  POT",
-        /*name*/ "Payment Order Token", /*symbol*/ "POT", /*baseUri*/ "http://localhost:8082/pot-metadata")
-}
-
-/**
- * Deploys CMTAT-Contract to the network configured via hardhat
- * @param hre
- */
-export async function deployCMTAT(hre: HardhatRuntimeEnvironment) {
-    return await deployContract(hre, "cache/solpp-generated-contracts/CMTAT/CMTAT.sol:CMTAT", "CMTAT")
-}
-
-/**
- * Deploys Plain-Vanilla-ERC20-Contract to the network configured via hardhat
- * @param hre
- */
-export async function deployERC20(hre: HardhatRuntimeEnvironment) {
-    return await deployContract(hre, "cache/solpp-generated-contracts/ERC20/ERC20_plain.sol:AssetToken", "ERC20")
+    let padding = single ? name.length : 5
+    console.log("Deployed " + name.padStart(padding) + " contract into " + hre.network.name + " network at address " + contract.address)
+    if (single) {
+        console.log("Don't forget to update the contract address in " + contracts_addresses_filename + " and possibly other scripts.")
+    }
+    return contract
 }

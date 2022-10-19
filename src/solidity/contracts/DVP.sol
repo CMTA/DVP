@@ -5,10 +5,11 @@ pragma solidity >=0.8.15 <0.9.0;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "./openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import "./POT/IPOT.sol";
@@ -19,26 +20,44 @@ import "hardhat/console.sol";
 // #endif
 
 
-/** contract not yet upgradeable, constructor has already been replaced by initialize function */
 contract DVP is
 Initializable,
-Ownable,
-Pausable,
+PausableUpgradeable,
+OwnableUpgradeable,
+UUPSUpgradeable,
 ERC721Holder,
 Log
 {
     /** Address of POT SC. Set in initialize function. */
     address private potAddress;
 
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+
     /**
      * @dev For upgradeability, this function replaces the constructor
      */
-    function initialize(address _potAddress) public initializer {
+    function initialize(address _potAddress)
+    public
+    initializer
+    {
         // #if LOG
         console.log("[DVP] Initializing DVP");
         // #endif
+        __Pausable_init();
+        __Ownable_init();
+        __UUPSUpgradeable_init();
+
         potAddress = _potAddress;
     }
+
+    function _authorizeUpgrade(address newImplementation)
+    internal
+    onlyOwner
+    override
+    {}
 
     /**
      * @dev Logs the confirmation of the delivery of a valid POT and the associated AT to the DvP.
@@ -66,15 +85,15 @@ Log
     whenNotPaused()
     {
         address owner = IPOT(potAddress).ownerOf(tokenId);
-        IPOT.potStatus status = IPOT(potAddress).getStatus(tokenId);
+        IPOT.potStatus potStatus = IPOT(potAddress).getStatus(tokenId);
 
         // #if LOG
         console.log("[DVP] DVP.checkDeliveryForPot(", tokenId, ")");
-        console.log("[DVP] owner:", nice(owner), "Status:", Log.statusToString(status));
+        console.log("[DVP] owner:", nice(owner), "Status:", Log.statusToString(potStatus));
         // #endif
 
         // if the POT is not in "Issued" status, revert
-        if (status != IPOT.potStatus.Issued) {
+        if (potStatus != IPOT.potStatus.Issued) {
             revert(string.concat("POT ", Strings.toString(tokenId), " does not have status 'Issued'."));
         }
         // #if LOG
@@ -144,8 +163,8 @@ Log
     whenNotPaused()
     {
         // if the POT is not in "Payment Confirmed" status, revert
-        IPOT.potStatus status = IPOT(potAddress).getStatus(tokenId);
-        if (status != IPOT.potStatus.PaymentConfirmed) {
+        IPOT.potStatus potStatus = IPOT(potAddress).getStatus(tokenId);
+        if (potStatus != IPOT.potStatus.PaymentConfirmed) {
             revert(string.concat("POT ", Strings.toString(tokenId), " does not have status 'Payment Confirmed'."));
         }
         // #if LOG
@@ -218,8 +237,8 @@ Log
     onlyOwner
     {
         // if the POT is not in "Payment Initiated" status, revert
-        IPOT.potStatus status = IPOT(potAddress).getStatus(tokenId);
-        if (status != IPOT.potStatus.PaymentInitiated) {
+        IPOT.potStatus potStatus = IPOT(potAddress).getStatus(tokenId);
+        if (potStatus != IPOT.potStatus.PaymentInitiated) {
             revert(string.concat("POT ", Strings.toString(tokenId), " does not have status 'Payment Initiated'."));
         }
 
@@ -263,8 +282,8 @@ Log
     onlyOwner
     {
         // if the POT is not in "Issued" status, revert
-        IPOT.potStatus status = IPOT(potAddress).getStatus(tokenId);
-        if (status != IPOT.potStatus.Issued) {
+        IPOT.potStatus potStatus = IPOT(potAddress).getStatus(tokenId);
+        if (potStatus != IPOT.potStatus.Issued) {
             revert(string.concat("POT ", Strings.toString(tokenId), " does not have status 'Issued'."));
         }
 
@@ -313,13 +332,11 @@ Log
         _unpause();
     }
 
-    string constant VERSION = "D1";
-
     function getVersion()
     public
     pure
     returns (string memory)
     {
-        return VERSION;
+        return "D1";
     }
 }

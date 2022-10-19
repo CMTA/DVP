@@ -1,5 +1,6 @@
 //run npm install @types/node --save-dev for "require" to work
 import { ContractFactory, Contract, BigNumber, ContractTransaction, ContractReceipt, ethers } from "ethers";
+import { getAddresses } from "./config";
 
 //require core modules
 const fs = require("fs");
@@ -15,22 +16,46 @@ const provider = new ethers.providers.JsonRpcProvider("http://localhost:8545")
 const signerSender = provider.getSigner(senderAddress)
 const signerReceiver = provider.getSigner(receiverAddress)
 
-//define contracts
-const dvpAddress: string = "0xB349FB172D6D5f693b0aA1C6eEc4c61cFd6846f4"
-let dvpContract: Contract
-
-const potAddress: string = "0x5f8e26fAcC23FA4cbd87b8d9Dbbd33D5047abDE1"
 let potContract: Contract
-
-const cmtatAddress: string = "0x21a59654176f2689d12E828B77a783072CD26680"
-let cmtatContract: Contract
-
-const erc20Address: string = "0xaD888d0Ade988EbEe74B8D4F39BF29a8d0fe8A8D"
+let dvpContract: Contract
 let erc20Contract: Contract
 
-// creates a contract
-function createContract(relPath: string, contractAddress: string) {
-    const filename = path.resolve(__dirname, "../build/cache/solpp-generated-contracts/" + relPath)
+let addresses
+let potAddress
+let dvpAddress
+let erc20Address
+
+async function main() {
+    addresses = await getAddresses()
+    if (addresses) {
+        potAddress = addresses.pot
+        dvpAddress = addresses.dvp
+        erc20Address = addresses.erc20
+    }
+}
+
+export async function getInfo() {
+    let potVersion = await pot_getVersion()
+    let dvpVersion = await dvp_getVersion()
+    return {pot: potAddress,
+            potVersion: potVersion,
+            dvp: dvpAddress,
+            dvpVersion: dvpVersion,
+            potUsedByDvP: await createDvP().getPotAddress(),
+            erc20: erc20Address}
+}
+
+/**
+ * Creates a contract (i.e., an object to access a deployed contract).
+ *
+ * @param abiPath the path to the contract's ABI file
+ * @param contractAddress the address at which the contract is deployed on the blockchain
+ */
+function createContract(abiPath: string, contractAddress: string) {
+    const filename = path.resolve(
+        __dirname, // __dirname is the directory containing the currently executing file
+        "../build/cache/solpp-generated-contracts/" // solpp places the generated abi files here
+         + abiPath)
     const file = fs.readFileSync(filename, "utf8")
     const json = JSON.parse(file)
     const abi = json.abi
@@ -46,20 +71,20 @@ function createDvP() {
     return dvpContract
 }
 
+// creates DvPv2 once
+function createDvPv2() {
+    if (dvpContract == null) {
+        dvpContract = createContract("DVPv2.sol/DVPv2.json", dvpAddress)
+    }
+    return dvpContract
+}
+
 // creates POT once
 function createPOT() {
     if (potContract == null) {
         potContract = createContract("POT/POT.sol/POT.json", potAddress)
     }
     return potContract
-}
-
-// creates CMTAT once
-function createCMTAT() {
-    if (cmtatContract == null) {
-        cmtatContract = createContract("CMTAT/CMTAT.sol/CMTAT.json", cmtatAddress)
-    }
-    return cmtatContract
 }
 
 // creates ERC20 once
@@ -70,80 +95,59 @@ function createERC20() {
     return erc20Contract
 }
 
-//CMTAT functions
-//initializes CMTAT-Contract
-export async function initializeCmtat() {
-    await createCMTAT().initialize(receiverAddress, receiverAddress, "CMTA-Token", "CMTAT", "", "")
-}
-
-//mints CMTAT at receiver address
-export async function mintAt(num: number) {
-    await createCMTAT().mint(receiverAddress,num)
-}
-
-//sets approval for CMTAT for DvP SC
-export async function increaseAllowance() {
-    await createCMTAT().connect(signerReceiver).increaseAllowance(dvpAddress,5)
-}
-
-//sets approval for CMTAT for DvP SC
-export async function approve() {
-    await createCMTAT().connect(signerReceiver).approve(dvpAddress,5)
-}
-
-//reads and returns Approval-Events of CMTAT SC
-export async function readApproval() {
-    let approvalFilter = createCMTAT().filters.Approval()
-    let approvals = await createCMTAT().queryFilter(approvalFilter)
-    console.log(approvals)
-}
-
-//reads allowance for CMTAT for DvP SC
-export async function allowance() {
-    let allowance = await createCMTAT().allowance(senderAddress,dvpAddress)
-    console.log(allowance.toNumber())
-}
-
-//call name function of CMTAT
-export async function cmtat_name() {
-    let name = await createCMTAT().name()
-    console.log(name)
-}
-
+//
 //DvP functions
+//
+
 //initializes DvP-Contract
 export async function initializeDvp() {
     await createDvP().initialize(potAddress)
 }
 
-//call getVersion function of DvP
+//calls getVersion
 export async function dvp_getVersion() {
-    let version = await createDvP().getVersion()
-    console.log(version)
+    return await createDvP().getVersion()
 }
 
-//call setPotAddress function of DvP
+//calls owner function
+export async function dvp_owner() {
+    let owner = await createDvP().owner()
+    console.log(owner)
+}
+
+//calls getFixFunction
+export async function dvp_getFixFunction() {
+    let response = await createDvPv2().getFixFunction()
+    console.log(response)
+}
+
+//calls setPotAddress
 export async function dvp_setPotAddress() {
     let address = await createDvP().setPotAddress(potAddress)
     console.log(address)
 }
 
-//call checkDeliveryForPot
-export async function dvp_checkDeliveryForPot(tokenId: number) {
-    await createDvP().checkDeliveryForPot(tokenId)
+//calls getPotAddress
+export async function dvp_getPotAddress() {
+    return await createDvP().getPotAddress()
 }
 
-//call executeDelivery
+//calls checkDeliveryForPot
+export async function dvp_checkDeliveryForPot(tokenId: number) {
+    return await createDvP().checkDeliveryForPot(tokenId)
+}
+
+//calls executeDelivery
 export async function dvp_executeDelivery(tokenId: number) {
     await createDvP().executeDelivery(tokenId)
 }
 
-//call cancelSettlement
+//calls cancelSettlement
 export async function dvp_cancelSettlement(tokenId: number) {
     await createDvP().cancelSettlement(tokenId)
 }
 
-//call deactivateOldPot
+//calls deactivateOldPot
 export async function dvp_deactivateOldPot(tokenId: number) {
     await createDvP().deactivateOldPot(tokenId)
 }
@@ -169,98 +173,182 @@ export async function dvp_readSettlementCanceled() {
     console.log(settlementCanceled)
 }
 
+
+//
 //POT functions
+//
+
 //mints POT
 export async function issuePaymentToken(amount: number, tokenId: number, to: string) {
     let pot = await createPOT().issuePaymentToken(to, tokenId, "TestID", amount, 0, erc20Address, "CHF", 100, senderAddress, receiverAddress)
     console.log(pot)
 }
 
-//call initiatePayment for POT as sender
+//calls initiatePayment for POT as sender
 export async function pot_initiatePayment(tokenId: number) {
     let pot = await createPOT().initiatePayment(tokenId)
     console.log(pot)
 }
 
-//call confirmPayment for POT as sender
+//calls confirmPayment for POT as sender
 export async function pot_confirmPayment(tokenId: number) {
     let pot = await createPOT().confirmPayment(tokenId)
     console.log(pot)
 }
 
-//transfer POT to DvP SC
+//transfers POT to DvP SC
 export async function pot_transfer(tokenId: number) {
     let pot = await createPOT()['safeTransferFrom(address,address,uint256)'](senderAddress,dvpAddress,tokenId)
     console.log(pot)
 }
 
-//deactivate POT at DvP address
+//deactivates POT at DvP address
 export async function deactivatePot(tokenId: BigNumber) {
     await createPOT().deactivatePot(tokenId)
 }
 
-//call getVersion function of POT
+//calls getVersion
 export async function pot_getVersion() {
-    let version = await createPOT().getVersion()
-    console.log(version)
+    return await createPOT().getVersion()
 }
 
-//call owner function of POT
+//calls getBaseURI
+export async function pot_getBaseURI() {
+    return await createPOT().getBaseURI()
+}
+
+//calls getDealDetailNum
+export async function pot_getDealDetailNum(tokenId: BigNumber) {
+    let dealDetailNum = await createPOT().getDealDetailNum(tokenId)
+    console.log(dealDetailNum)
+}
+
+//calls getDealDetailNum2
+export async function pot_getDealDetailNum2(tokenId: BigNumber) {
+    let dealDetailNum2 = await createPOT().getDealDetailNum2(tokenId)
+    console.log(dealDetailNum2)
+}
+
+//calls getDealDetailAddress
+export async function pot_getDealDetailAddress(tokenId: BigNumber) {
+    let dealDetailAddress = await createPOT().getDealDetailAddress(tokenId)
+    console.log(dealDetailAddress)
+}
+
+//calls owner function of POT
 export async function pot_owner() {
     let owner = await createPOT().owner()
     console.log(owner)
 }
 
-//call getStatus function of POT
-export async function pot_getStatus(tokenId: number) {
+//calls getStatus
+export async function pot_getStatus(tokenId: BigNumber) {
     let status = await createPOT().getStatus(tokenId)
     console.log(status)
 }
 
+//calls getMintTime
+export async function pot_getMintTime(tokenId: BigNumber) {
+    let mintTime = await createPOT().getMintTime(tokenId)
+    console.log(mintTime)
+}
+
+//calls getReceiver
+export async function pot_getReceiver(tokenId: BigNumber) {
+    let receiver = await createPOT().getReceiver(tokenId)
+    console.log(receiver)
+}
+
+//calls getSender
+export async function pot_getSender(tokenId: BigNumber) {
+    let sender = await createPOT().getSender(tokenId)
+    console.log(sender)
+}
+
+//calls getAmount
+export async function pot_getAmount(tokenId: BigNumber) {
+    let amount = await createPOT().getAmount(tokenId)
+    console.log(amount)
+}
+
+//calls getCurrency
+export async function pot_getCurrency(tokenId: BigNumber) {
+    let currency = await createPOT().getCurrency(tokenId)
+    console.log(currency)
+}
+
+//calls getBusinessId
+export async function pot_getBusinessId(tokenId: BigNumber) {
+    let businessId = await createPOT().getBusinessId(tokenId)
+    console.log(businessId)
+}
+
+//calls getBusinessId
+export async function pot_ownerOf(tokenId: BigNumber) {
+    let owner = await createPOT().ownerOf(tokenId)
+    console.log(owner)
+}
+
+//
 //ERC20 functions
-//call name function of ERC20
+//
+
+//calls name function of ERC20
 export async function erc20_name() {
     let name = await createERC20().name()
     console.log(name)
 }
 
-//call getVersion function of ERC20
+//calls getVersion
 export async function erc20_getVersion() {
     let version = await createERC20().getVersion()
     console.log(version)
 }
 
-//call balanceOf function of ERC20 for DvP
-export async function erc20_balanceOfDvp() {
-    let result = await createERC20().balanceOf(dvpAddress)
-    console.log(result)
+//calls balanceOf function of ERC20 for DvP
+export async function erc20_balanceOfDvP() {
+    let balanceBigNum = await createERC20().balanceOf(dvpAddress)
+    console.log(balanceBigNum.toNumber())
 }
 
-//call balanceOf function of ERC20 for Receiver
+//calls balanceOf function of ERC20 for Receiver
 export async function erc20_balanceOfReceiver() {
-    let result = await createERC20().balanceOf(receiverAddress)
-    console.log(result)
+    let balanceBigNum = await createERC20().balanceOf(receiverAddress)
+    console.log(balanceBigNum.toNumber())
 }
 
-//call mint function of ERC20
+//calls balanceOf function of ERC20 for Sender
+export async function erc20_balanceOfSender() {
+    let balanceBigNum = await createERC20().balanceOf(senderAddress)
+    console.log(balanceBigNum.toNumber())
+}
+
+//calls mint function
 export async function erc20_mint() {
     await createERC20().mint(receiverAddress,5)
 }
 
-//call increaseAllowance function of ERC20
+//calls increaseAllowance
 export async function erc20_increaseAllowance() {
-    await createERC20().connect(signerReceiver).increaseAllowance(dvpAddress,5)
+    await createERC20().connect(signerReceiver).increaseAllowance(dvpAddress, 5)
 }
 
-//call allowance function of ERC20
+//calls allowance
 export async function erc20_allowance() {
-    let result = await createERC20().allowance(receiverAddress, dvpAddress)
-    console.log(result)
+    let allowanceBigNum = await createERC20().allowance(receiverAddress, dvpAddress)
+    console.log(allowanceBigNum.toNumber())
 }
 
-//reads and returns Transfer-Events of ERC20 SC
+export async function erc20_transfer(toaddress: String) {
+    await createERC20().transfer(toaddress, 2)
+}
+
+//reads and returns Transfer-Events of ERC20
 export async function erc20_readTransfer() {
     let transferFilter = createERC20().filters.Transfer()
     let transfers = await createERC20().queryFilter(transferFilter, -10)
     console.log(transfers)
 }
+
+
+main()

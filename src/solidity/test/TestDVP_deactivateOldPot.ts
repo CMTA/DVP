@@ -1,7 +1,7 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { ContractFactory, Contract, BigNumber } from "ethers";
-import { ethers } from "hardhat";
+import { ethers, upgrades } from "hardhat";
 import { Hex } from "web3/utils";
 
 /**
@@ -47,7 +47,7 @@ interface TokenTestData {
 }
 
 // Test data
-let atTestData: ATTestData = { contractName: "CMTAT", name: "CMTA Token", symbol: "CMTAT" }
+let atTestData: ATTestData = { contractName: "AssetToken", name: "Asset Token", symbol: "AT" }
 let potTestData: POTTestData = { contractName: "POT", name: "Payment Order Token", symbol: "POT", baseURI: "localhost" }
 let dvpTestData: DVPTestData = { contractName: "DVP" }
 const businessId1 = "Deal_1"
@@ -77,17 +77,12 @@ before(async function () {
 beforeEach(async function () {
   at = await atFactory.deploy()
   await at.deployed()
-  // function initialize (address owner, address forwarder, string memory name, string memory symbol, string memory tokenId, string memory terms) public initializer {
-  at.initialize(receiver)
-  //const decimals = await at.decimals() // just to make sure it's really the CMTAT
-  //console.log("AT decimals: " + decimals)
 
   pot = await potFactory.deploy(potTestData.name, potTestData.symbol, potTestData.baseURI)
   await pot.deployed()
 
-  dvp = await dvpFactory.deploy()
-  await dvp.deployed()
-  dvp.initialize(pot.address)
+  dvp = await upgrades.deployProxy(dvpFactory, [pot.address], {
+                      initializer: "initialize"})
 
   console.log("[TEST] beforeEach: deployed AT, POT and DVP")
 

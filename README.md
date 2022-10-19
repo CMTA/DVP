@@ -21,72 +21,41 @@ uses hardhat.config.ts
 
 uses hardhat.config.ts
 
+### Upgradeability
 
-## CMTA Token Contract
+To provide upgradeability, DVP.sol extends the UUPSUpgradeable contract and the "Upgradeable" variants of other OZ contracts, and has an `initialize()` function instead of a constructor.
 
-### Cloning and integrating
+To test this, there is a contract DVPv2.sol which differs from DVP.sol in the additional function `getFixFunction()` and a different implementation of `getVersion()`.
 
-The CMTA Token (CMTAT) sources are located at https://github.com/CMTA/CMTAT/.
+Test:
 
-`git clone https://github.com/CMTA/CMTAT/` clones them, with an empty `openzeppelin-contracts-upgradeable` folder.
+```shell
+$ npx hardhat deploy_dvp_contract --potaddress 0x9b1f7F645351AF3631a656421eD2e40f2802E6c0 --network localhost
+DVP will be initialized with POT at 0x9b1f7F645351AF3631a656421eD2e40f2802E6c0
+Deployed DVP contract into localhost network at address 0xFC628dd79137395F3C9744e33b1c5DE554D94882
 
-![github_CMTA.png](docs/github_CMTA.png)
+// insert this DVP address in scripts/contracts.json
 
-The easy-to-overlook arrow next to the openzeppelin... folder means that a fixed set of these files is used:
-https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/tree/aeb86bf4f438e0fedb5eecc3dd334fd6544ab1f6
+$ npx hardhat dvp_getVersion --network localhost
+D1
 
-You should download [this archive](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/archive/aeb86bf4f438e0fedb5eecc3dd334fd6544ab1f6.zip) and unpack it next to the CMTAT folder. To simplify local changes like logging and test functions, these 159 contracts were (temporarily) pushed to our git.
+$ npx hardhat dvp_getFixFunction --network localhost
+An unexpected error occurred:
 
-The CMTA smart contracts do not import the OpenZeppelin ones from the npm registry (`import "@openzeppelin/contracts-upgradeable/...`, but the local files (`import "../../openzeppelin-contracts-upgradeable/contracts/...`)).
+TypeError: createDvPv2(...).getFixFunction is not a function
+...
 
-:warning: As to Sébastien Krafft:
+$ npx hardhat dvp_upgrade_contract --network localhost
+Upgraded DVPv2 contract into localhost network at address 0xFC628dd79137395F3C9744e33b1c5DE554D94882
 
-> The reason is to force openzeppelin version and not be dependent of npm for the audit of the smart contracts and to avoid problems with minor version upgrades. Mainly for security reasons, you should not use another version than the one that is in the Github
+$ npx hardhat dvp_getVersion --network localhost
+UPGRADED
 
-
-
-So the folders must have this structure in src/solidity/contracts:
-
-<img align="left" src="docs/folders.png">
-
-
-
-You **would** install install the OZ Contracts like this:
-
-```
-npm install @openzeppelin/contracts
-npm install @openzeppelin/contracts-upgradeable
+$ npx hardhat dvp_getFixFunction --network localhost
+new function
 ```
 
+##### Implementation details
 
-
-### Local adaptions
-
-`CMTAC.sol` has many base classes. `AccessControlUpgradeable.sol`  and `CMTAT.sol`itself implement complex _role-based access control mechanisms_ (see comment). This will not be operated by us, which is why for development, this was turned off:
-
-```solidity
-function mint(address to, uint256 amount) public
-//onlyRole(MINTER_ROLE)
-```
-
-
-
-### approve vs. increaseAllowance
-
-`ERC20Upgradeable.sol ` implements the functions `increaseAllowance` and `decreaseAllowance` with this comment:
-
-```solidity
-  * @dev Atomically increases [decreases] the allowance granted to `spender` by the caller.
-  *
-  * This is an alternative to {approve} that can be used as a mitigation for
-  * problems described in {IERC20-approve}.
-```
-
-Why the original `approve` function cannot be called from out tests is yet to be found out.
-
-
-## Intellectual property
-
-The code is copyright (c) Capital Market and Technology Association,
-2022, and is released under [MIT License](./LICENSE.md).
+The script deploy_contracts.ts contains functions to deploy smart contracts in an upgradeable manner (`function deployUpgradeableContract`).
 

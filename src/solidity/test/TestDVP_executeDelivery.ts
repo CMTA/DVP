@@ -1,7 +1,7 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { ContractFactory, Contract, BigNumber } from "ethers";
-import { ethers } from "hardhat";
+import { ethers, upgrades } from "hardhat";
 import { Hex } from "web3/utils";
 
 /**
@@ -47,7 +47,7 @@ interface TokenTestData {
 }
 
 // Test data
-let atTestData: ATTestData = { contractName: "CMTAT", name: "CMTA Token", symbol: "CMTAT" }
+let atTestData: ATTestData = { contractName: "AssetToken", name: "Asset Token", symbol: "AT" }
 let potTestData: POTTestData = { contractName: "POT", name: "Payment Order Token", symbol: "POT", baseURI: "localhost" }
 let dvpTestData: DVPTestData = { contractName: "DVP" }
 const businessId1 = "Deal_1"
@@ -77,17 +77,12 @@ before(async function () {
 beforeEach(async function () {
   at = await atFactory.deploy()
   await at.deployed()
-  // function initialize (address owner, address forwarder, string memory name, string memory symbol, string memory tokenId, string memory terms) public initializer {
-  at.initialize(receiver)
-  //const decimals = await at.decimals() // just to make sure it's really the CMTAT
-  //console.log("AT decimals: " + decimals)
 
   pot = await potFactory.deploy(potTestData.name, potTestData.symbol, potTestData.baseURI)
   await pot.deployed()
 
-  dvp = await dvpFactory.deploy()
-  await dvp.deployed()
-  dvp.initialize(pot.address)
+  dvp = await upgrades.deployProxy(dvpFactory, [pot.address], {
+                      initializer: "initialize"})
 
   console.log("[TEST] beforeEach: deployed AT, POT and DVP")
 
@@ -137,14 +132,9 @@ describe("DVP.executeDelivery", function () {
     console.log("\n[TEST] at.increaseAllowance()")
     await at.connect(receiver).increaseAllowance(dvp.address, 111)
 
-    // TODO receiver needs the correct role, otherwise, there is this error:
-    // reverted with reason string 'AccessControl: account 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc is missing role 0x9f2df0fed2c77648de5860a4cc508cd0818c85b8b8a1ab4ceeef8d981c8956a6'
-
-    // the test succeeds if you remove 'onlyRole(MINTER_ROLE)' in CMTAT.sol
-
-    // function mint(address to, uint256 amount) public onlyRole(MINTER_ROLE) {
+    // function mint(address to, uint256 amount) public {
     console.log("\n[TEST] Minting AT")
-    await at.connect(receiver).mint(receiver.address, 7)
+    await at.mint(receiver.address, 7)
     console.log("[TEST] Minted AT")
 
     // (5)
@@ -198,7 +188,7 @@ describe("DVP.executeDelivery", function () {
 
     // function mint(address to, uint256 amount) public onlyRole(MINTER_ROLE) {
     console.log("\n[TEST] Minting AT")
-    await at.connect(receiver).mint(receiver.address, 7)
+    await at.mint(receiver.address, 7)
     console.log("[TEST] Minted AT")
 
     // (5)
@@ -245,7 +235,7 @@ describe("DVP.executeDelivery", function () {
     await pot.initiatePayment(token1.tokenId)
 
     console.log("\n[TEST] Minting AT for DVP")
-    await at.connect(receiver).mint(dvp.address, 5)
+    await at.mint(dvp.address, 5)
     console.log("[TEST] Minted AT")
 
     const potStatus = await pot.getStatus(token1.tokenId)
@@ -279,7 +269,7 @@ describe("DVP.executeDelivery", function () {
     await pot.initiatePayment(token1.tokenId)
 
     console.log("\n[TEST] Minting AT for DVP")
-    await at.connect(receiver).mint(dvp.address, 5)
+    await at.mint(dvp.address, 5)
     console.log("[TEST] Minted AT")
 
     const potStatus = await pot.getStatus(token1.tokenId)

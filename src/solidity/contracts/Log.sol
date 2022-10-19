@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.15 <0.9.0;
 
+// #def LOG false
+
 import "./POT/IPOT.sol";
 
 /**
@@ -9,20 +11,27 @@ import "./POT/IPOT.sol";
  */
 contract Log {
 
+  // #if LOG
   mapping(address => string) names;
+  // #endif
 
-  // Allows to store names for addresses
+  // Allows storing names for addresses.
+  // Typically not called by other contracts, only by unit tests.
   function store(address _address, string memory name)
   public
   {
+    // #if LOG
     names[_address] = name;
+    // #endif
   }
 
-  // Returns the name associated with a specific address or address as string
+  // Returns the name associated with a specific address or address as string.
+  // Typically not called by other contracts, only by unit tests.
   function nice(address _address)
   public
   view
   returns(string memory) {
+    // #if LOG
     string memory name = names[_address];
 
     bytes memory tempEmptyString = bytes(name);
@@ -30,9 +39,11 @@ contract Log {
       return toString(_address);
     }
     return name;
+    // #endif
   }
 
-  // Convert address into a string
+  // #if LOG
+  // Converts address into a string.
   function toString(address account)
   public
   pure
@@ -40,7 +51,7 @@ contract Log {
     return toString(abi.encodePacked(account));
   }
 
-  // Convert bytes into a string
+  // Converts bytes into a string.
   function toString(bytes memory data)
   public
   pure
@@ -56,16 +67,18 @@ contract Log {
     }
     return string(str);
   }
+  // #endif
 
-  // Returns string representation of IPOT.potStatus
-  function statusToString(IPOT.potStatus status)
+  // Returns string representation of IPOT.potStatus.
+  // May only be called from tests or log statements in contracts.
+  function statusToString(IPOT.potStatus potStatus)
   public
   pure
   returns(string memory) {
-    if (status == IPOT.potStatus.Issued) return "Issued";
-    if (status == IPOT.potStatus.PaymentInitiated) return "PaymentInitiated";
-    if (status == IPOT.potStatus.PaymentConfirmed) return "PaymentConfirmed";
-    if (status == IPOT.potStatus.Deactivated) return "Deactivated";
+    if (potStatus == IPOT.potStatus.Issued) return "Issued";
+    if (potStatus == IPOT.potStatus.PaymentInitiated) return "PaymentInitiated";
+    if (potStatus == IPOT.potStatus.PaymentConfirmed) return "PaymentConfirmed";
+    if (potStatus == IPOT.potStatus.Deactivated) return "Deactivated";
     return "Invalid";
   }
 }
