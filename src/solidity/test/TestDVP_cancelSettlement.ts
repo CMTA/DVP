@@ -7,6 +7,7 @@ import "@nomiclabs/hardhat-ethers";
 import '@openzeppelin/hardhat-upgrades';
 import chai from "chai";
 import { solidity } from "ethereum-waffle";
+import { storeName } from "./TestDVP_common";
 
 /**
  * These variables are initialized in before() method
@@ -102,10 +103,6 @@ beforeEach(async function () {
   storeName(pot, sender.address, 'Sender')
   storeName(pot, receiver.address, 'Receiver')
 })
-
-function storeName(contract: Contract, address: string, name: string) {
-  contract.store(address, name + ' (' + address.toLowerCase() + ')')
-}
 
 describe("DVP.cancelSettlement", function () {
 

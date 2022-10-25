@@ -3,6 +3,7 @@ import { expect } from "chai";
 import { ContractFactory, Contract, BigNumber } from "ethers";
 import { ethers, upgrades } from "hardhat";
 import { Hex } from "web3/utils";
+import { storeName } from "./TestDVP_common";
 
 /**
  * These variables are initialized in before() method
@@ -96,10 +97,6 @@ beforeEach(async function () {
   storeName(pot, sender.address, 'Sender')
   storeName(pot, receiver.address, 'Receiver')
 })
-
-function storeName(contract: Contract, address: string, name: string) {
-  contract.store(address, name + ' (' + address.toLowerCase() + ')')
-}
 
 describe("DVP Pauseability", function () {
 
