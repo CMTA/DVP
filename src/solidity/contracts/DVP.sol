@@ -14,8 +14,8 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
 import "./POT/IPOT.sol";
 
-import "./Log.sol";
 // #if LOG
+import "./Log.sol";
 import "hardhat/console.sol";
 // #endif
 
@@ -25,8 +25,10 @@ Initializable,
 PausableUpgradeable,
 OwnableUpgradeable,
 UUPSUpgradeable,
-ERC721HolderUpgradeable,
-Log
+ERC721HolderUpgradeable
+// #if LOG
+, Log
+// #endif
 {
     /** Address of POT SC. Set in initialize function. */
     address private potAddress;
