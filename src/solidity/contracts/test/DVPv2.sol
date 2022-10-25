@@ -12,9 +12,9 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradea
 import "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
-import "./POT/IPOT.sol";
+import "../POT/IPOT.sol";
 
-import "./Log.sol";
+import "../Log.sol";
 // #if LOG
 import "hardhat/console.sol";
 // #endif
