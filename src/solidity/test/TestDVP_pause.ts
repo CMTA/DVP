@@ -7,19 +7,19 @@ import { Hex } from "web3/utils";
 /**
  * These variables are initialized in before() method
  */
-let atFactory: ContractFactory;
-let potFactory: ContractFactory;
-let dvpFactory: ContractFactory;
-let sender: SignerWithAddress;
-let receiver: SignerWithAddress;
-let addrs: SignerWithAddress[];
+let atFactory: ContractFactory
+let potFactory: ContractFactory
+let dvpFactory: ContractFactory
+let sender: SignerWithAddress
+let receiver: SignerWithAddress
+let addrs: SignerWithAddress[]
 
 /**
  * These variables are initialized in beforeEach() method
  */
-let at: Contract;
-let pot: Contract;
-let dvp: Contract;
+let at: Contract
+let pot: Contract
+let dvp: Contract
 
 /**
  * Interfaces to structure test data
