@@ -22,7 +22,7 @@ describe("DVP Upgradeability", function () {
 
     let version = await dvp.getVersion()
     console.log(version)
-    expect(version).to.equal('D1')
+    expect(version).to.equal('D2')
 
     // function must not be available
     expect(() => {
