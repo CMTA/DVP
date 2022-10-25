@@ -249,7 +249,7 @@ task("erc20_readTransfer", "Returns all transfer events in the last 10 blocks", 
 
 const config: HardhatUserConfig = {
   solidity: {
-    version: "0.8.15",
+    version: "0.8.17",
     settings: {
       optimizer: {
         enabled: true,
