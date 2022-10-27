@@ -1,9 +1,9 @@
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { expect } from "chai";
-import { ContractFactory, Contract, BigNumber } from "ethers";
-import { ethers, upgrades } from "hardhat";
-import { Hex } from "web3/utils";
-import { storeName } from "./TestDVP_common";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
+import { expect } from "chai"
+import { ContractFactory, Contract, BigNumber } from "ethers"
+import { ethers, upgrades } from "hardhat"
+import { Hex } from "web3/utils"
+import { storeName } from "./TestDVP_common"
 
 /**
  * These variables are initialized in before() method

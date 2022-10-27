@@ -1,8 +1,8 @@
-import { ContractFactory } from "ethers";
-import { HardhatRuntimeEnvironment } from "hardhat/types";
+import { ContractFactory } from "ethers"
+import { HardhatRuntimeEnvironment } from "hardhat/types"
 import { contracts_addresses_filename } from './config'
-import "@nomiclabs/hardhat-ethers";
-import '@openzeppelin/hardhat-upgrades';
+import "@nomiclabs/hardhat-ethers"
+import '@openzeppelin/hardhat-upgrades'
 
 /**
  * Deploys DVP-Contract to the network configured via hardhat.

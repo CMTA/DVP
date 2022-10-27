@@ -1,4 +1,4 @@
-import { Contract } from "ethers";
+import { Contract } from "ethers"
 
 export function storeName(contract: Contract, address: string, name: string) {
   try {

@@ -1,13 +1,11 @@
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { expect } from "chai";
-import { ContractFactory, Contract, BigNumber } from "ethers";
-import { ethers, upgrades } from "hardhat";
-import { Hex } from "web3/utils";
-import "@nomiclabs/hardhat-ethers";
-import '@openzeppelin/hardhat-upgrades';
-import chai from "chai";
-import { solidity } from "ethereum-waffle";
-import { storeName } from "./TestDVP_common";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
+import { expect } from "chai"
+import { ContractFactory, Contract, BigNumber } from "ethers"
+import { ethers, upgrades } from "hardhat"
+import { Hex } from "web3/utils"
+import "@nomiclabs/hardhat-ethers"
+import '@openzeppelin/hardhat-upgrades'
+import { storeName } from "./TestDVP_common"
 
 /**
  * These variables are initialized in before() method
