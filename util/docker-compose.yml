@@ -1,0 +1,16 @@
+#run ganache only for local tests
+version: "3.9"
+services:
+
+  ganache-cli:
+    image: trufflesuite/ganache-cli:latest
+    ports:
+      - "8545:8545"
+    volumes:
+      - type: volume
+        source: eth_blockchain
+        target: /data
+    entrypoint: ["node", "/app/ganache-core.docker.cli.js", "--networkId=57771", "--deterministic", "--accounts=3", "--host=0.0.0.0", "--db=/data"]
+
+volumes:
+  eth_blockchain:
