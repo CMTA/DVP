@@ -1,5 +1,6 @@
 {
     "env": {
+        "browser": false,
         "es2021": true,
         "node": true
     },
@@ -18,5 +19,17 @@
         "@typescript-eslint"
     ],
     "rules": {
+        "indent": [
+            "warn",
+            2
+        ],
+        "linebreak-style": [
+            "warn",
+            "windows"
+        ],
+        "semi": [
+            "error",
+            "never"
+        ]
     }
 }
