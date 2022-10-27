@@ -2,7 +2,6 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 import { expect } from "chai"
 import { ContractFactory, Contract, BigNumber } from "ethers"
 import { ethers, upgrades } from "hardhat"
-import { Hex } from "web3/utils"
 import "@nomiclabs/hardhat-ethers"
 import '@openzeppelin/hardhat-upgrades'
 import { storeName } from "./TestDVP_common"
@@ -53,12 +52,7 @@ const atTestData: ATTestData = { contractName: "AssetToken", name: "Asset Token"
 const potTestData: POTTestData = { contractName: "POT", name: "Payment Order Token", symbol: "POT", baseURI: "localhost" }
 const dvpTestData: DVPTestData = { contractName: "DVP" }
 const businessId1 = "Deal_1"
-const businessId2 = "Deal_2"
 const token1: TokenTestData = { tokenId: BigNumber.from(1), businessId: businessId1 }
-
-// Supported interfaces
-const ERC_721: Hex = 0x80ac58cd
-const ERC_721_Metadata: Hex = 0x5b5e139f
 
 /**
  * Contract factory and test accounts have to be requested only once for all tests

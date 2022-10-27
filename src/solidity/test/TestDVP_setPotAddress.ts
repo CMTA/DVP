@@ -1,8 +1,7 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 import { expect } from "chai"
-import { ContractFactory, Contract, BigNumber } from "ethers"
+import { ContractFactory, Contract } from "ethers"
 import { ethers, upgrades } from "hardhat"
-import { Hex } from "web3/utils"
 import { storeName } from "./TestDVP_common"
 
 /**
@@ -13,7 +12,6 @@ let potFactory: ContractFactory
 let dvpFactory: ContractFactory
 let sender: SignerWithAddress
 let receiver: SignerWithAddress
-let addrs: SignerWithAddress[]
 
 /**
  * These variables are initialized in beforeEach() method
@@ -42,25 +40,10 @@ interface DVPTestData {
   contractName: string
 }
 
-interface TokenTestData {
-  tokenId: BigNumber,
-  businessId: string
-}
-
 // Test data
 const atTestData: ATTestData = { contractName: "AssetToken", name: "Asset Token", symbol: "AT" }
 const potTestData: POTTestData = { contractName: "POT", name: "Payment Order Token", symbol: "POT", baseURI: "localhost" }
 const dvpTestData: DVPTestData = { contractName: "DVP" }
-const businessId1 = "Deal_1"
-const businessId2 = "Deal_2"
-// note: token1 and token3 have the same businessId, token2's is different
-const token1: TokenTestData = { tokenId: BigNumber.from(1), businessId: businessId1 }
-const token2: TokenTestData = { tokenId: BigNumber.from(2), businessId: businessId2 }
-const token3: TokenTestData = { tokenId: BigNumber.from(3), businessId: businessId1 }
-
-// Supported interfaces
-const ERC_721: Hex = 0x80ac58cd
-const ERC_721_Metadata: Hex = 0x5b5e139f
 
 /**
  * Contract factory and test accounts have to be requested only once for all tests
@@ -69,7 +52,7 @@ before(async function () {
   atFactory  = await ethers.getContractFactory(atTestData.contractName)
   potFactory = await ethers.getContractFactory(potTestData.contractName)
   dvpFactory = await ethers.getContractFactory(dvpTestData.contractName);
-  [sender, receiver, ...addrs] = await ethers.getSigners()
+  [sender, receiver] = await ethers.getSigners()
 })
 
 /**

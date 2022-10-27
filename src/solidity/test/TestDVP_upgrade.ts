@@ -1,7 +1,5 @@
 import { expect } from "chai"
-import { HardhatRuntimeEnvironment } from "hardhat/types"
 import { ethers, upgrades } from "hardhat"
-import { ContractFactory, Contract } from "ethers"
 
 describe("DVP Upgradeability", function () {
 
@@ -22,7 +20,7 @@ describe("DVP Upgradeability", function () {
 
     let version = await dvp.getVersion()
     console.log(version)
-    expect(version).to.equal('D2')
+    expect(version).to.equal('D1')
 
     // function must not be available
     expect(() => {
