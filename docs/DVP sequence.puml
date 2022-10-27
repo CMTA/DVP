@@ -1,6 +1,6 @@
 @startuml
 
-participant BX_Swiss order 10
+participant Customer order 10
 participant SettlementConverter order 20
 participant DLT2Pay order 30
 participant POT_SC order 40
@@ -11,7 +11,7 @@ participant AT_SC order 80
 
 
 
-BX_Swiss -> SettlementConverter : (1) [Type?] SettlementMessage
+Customer -> SettlementConverter : (1) SettlementMessage
 
 SettlementConverter -> DLT2Pay : (2) [REST] orderPOT
 
