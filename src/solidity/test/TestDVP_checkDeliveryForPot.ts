@@ -48,9 +48,9 @@ interface TokenTestData {
 }
 
 // Test data
-let atTestData: ATTestData = { contractName: "AssetToken", name: "Asset Token", symbol: "AT" }
-let potTestData: POTTestData = { contractName: "POT", name: "Payment Order Token", symbol: "POT", baseURI: "localhost" }
-let dvpTestData: DVPTestData = { contractName: "DVP" }
+const atTestData: ATTestData = { contractName: "AssetToken", name: "Asset Token", symbol: "AT" }
+const potTestData: POTTestData = { contractName: "POT", name: "Payment Order Token", symbol: "POT", baseURI: "localhost" }
+const dvpTestData: DVPTestData = { contractName: "DVP" }
 const businessId1 = "Deal_1"
 const businessId2 = "Deal_2"
 // note: token1 and token3 have the same businessId, token2's is different
@@ -66,10 +66,10 @@ const ERC_721_Metadata: Hex = 0x5b5e139f
  * Contract factory and test accounts have to be requested only once for all tests
  */
 before(async function () {
-  atFactory  = await ethers.getContractFactory(atTestData.contractName);
-  potFactory = await ethers.getContractFactory(potTestData.contractName);
+  atFactory  = await ethers.getContractFactory(atTestData.contractName)
+  potFactory = await ethers.getContractFactory(potTestData.contractName)
   dvpFactory = await ethers.getContractFactory(dvpTestData.contractName);
-  [sender, receiver, ...addrs] = await ethers.getSigners();
+  [sender, receiver, ...addrs] = await ethers.getSigners()
 })
 
 /**
@@ -83,7 +83,7 @@ beforeEach(async function () {
   await pot.deployed()
 
   dvp = await upgrades.deployProxy(dvpFactory, [pot.address], {
-                      initializer: "initialize"})
+    initializer: "initialize"})
 
   console.log("[TEST] beforeEach: deployed AT, POT and DVP")
 
@@ -102,16 +102,16 @@ describe("DVP.checkDeliveryForPot", function () {
 
   it("Tests that checkDeliveryForPot is only executed if the POT is in Issued state.", async () => {
     await pot.issuePaymentToken(
-        dvp.address, // to
-        token1.tokenId,
-        token1.businessId,
-        2, // dealDetailNum
-        3, // dealDetailNum2
-        at.address,
-        "EUR",
-        25,
-        sender.address,
-        receiver.address)
+      dvp.address, // to
+      token1.tokenId,
+      token1.businessId,
+      2, // dealDetailNum
+      3, // dealDetailNum2
+      at.address,
+      "EUR",
+      25,
+      sender.address,
+      receiver.address)
 
     await pot.deactivatePot(token1.tokenId) // sets POT state to Deactivated
 
@@ -120,34 +120,34 @@ describe("DVP.checkDeliveryForPot", function () {
 
   it("Tests that checkDeliveryForPot is only executed if the DvP is the owner of the POT.", async () => {
     await pot.issuePaymentToken(
-        receiver.address, // to, not DvP
-        token1.tokenId,
-        token1.businessId,
-        2, // dealDetailNum
-        3, // dealDetailNum2
-        at.address,
-        "EUR",
-        25,
-        sender.address,
-        receiver.address)
+      receiver.address, // to, not DvP
+      token1.tokenId,
+      token1.businessId,
+      2, // dealDetailNum
+      3, // dealDetailNum2
+      at.address,
+      "EUR",
+      25,
+      sender.address,
+      receiver.address)
 
     await expect(dvp.checkDeliveryForPot(token1.tokenId)).to.be.revertedWith("DvP is not owner of POT 1.")
   })
 
   it("Tests that checkDeliveryForPot is only executed with a sufficient allowance.", async () => {
     // (3), (4) Let POT contract mint a POT
-    console.log("\n[TEST] Minting POT");
+    console.log("\n[TEST] Minting POT")
     await pot.issuePaymentToken(
-        dvp.address, // to
-        token1.tokenId,
-        token1.businessId,
-        2, // dealDetailNum
-        3, // dealDetailNum2
-        at.address,
-        "EUR",
-        25,
-        sender.address,
-        receiver.address)
+      dvp.address, // to
+      token1.tokenId,
+      token1.businessId,
+      2, // dealDetailNum
+      3, // dealDetailNum2
+      at.address,
+      "EUR",
+      25,
+      sender.address,
+      receiver.address)
 
     // (5) No allowance was set, so there must be the following error
     await expect(dvp.checkDeliveryForPot(token1.tokenId)).to.be.revertedWith("Allowance 0 not sufficient to settle POT 1. Allowance of minimum 2 needed.")
@@ -167,18 +167,18 @@ describe("DVP.checkDeliveryForPot", function () {
 
   it("Tests that checkDeliveryForPot is only executed with a sufficient balance.", async () => {
     // (3), (4) Let POT contract mint a POT
-    console.log("\n[TEST] Minting POT");
+    console.log("\n[TEST] Minting POT")
     await pot.issuePaymentToken(
-        dvp.address, // to
-        token1.tokenId,
-        token1.businessId,
-        10, // dealDetailNum = number of AssetTokens needed for settlement
-        3, // dealDetailNum2
-        at.address,
-        "EUR",
-        25,
-        sender.address,
-        receiver.address)
+      dvp.address, // to
+      token1.tokenId,
+      token1.businessId,
+      10, // dealDetailNum = number of AssetTokens needed for settlement
+      3, // dealDetailNum2
+      at.address,
+      "EUR",
+      25,
+      sender.address,
+      receiver.address)
 
     // increase the allowance to 2
     await at.connect(receiver).increaseAllowance(dvp.address, 20)
@@ -196,16 +196,16 @@ describe("DVP.checkDeliveryForPot", function () {
     // (3), (4) Let POT contract mint a POT
     console.log("\n[TEST] Minting POT")
     await pot.issuePaymentToken(
-        dvp.address, // to
-        token1.tokenId,
-        token1.businessId,
-        2, // dealDetailNum, used as numAssetTokensForSettlement
-        3, // dealDetailNum2, not used here
-        at.address,
-        "EUR",
-        25,
-        sender.address,
-        receiver.address)
+      dvp.address, // to
+      token1.tokenId,
+      token1.businessId,
+      2, // dealDetailNum, used as numAssetTokensForSettlement
+      3, // dealDetailNum2, not used here
+      at.address,
+      "EUR",
+      25,
+      sender.address,
+      receiver.address)
 
     console.log("\n[TEST] at.increaseAllowance()")
     await at.connect(receiver).increaseAllowance(dvp.address, 111)
@@ -218,7 +218,7 @@ describe("DVP.checkDeliveryForPot", function () {
     await dvp.checkDeliveryForPot(token1.tokenId)
 
     // now the DVP must own 2 ATs
-    let dvpBalance = await at.balanceOf(dvp.address)
+    const dvpBalance = await at.balanceOf(dvp.address)
     expect(dvpBalance).to.equal(2)
   })
 
@@ -232,16 +232,16 @@ describe("DVP.checkDeliveryForPot", function () {
     // (3), (4) Let POT contract mint a POT
     console.log("\n[TEST] Minting POT")
     await pot.issuePaymentToken(
-        dvp.address, // to
-        token1.tokenId,
-        token1.businessId,
-        2, // dealDetailNum, used as numAssetTokensForSettlement
-        3, // dealDetailNum2, not used here
-        at.address,
-        "EUR",
-        25,
-        sender.address,
-        receiver.address)
+      dvp.address, // to
+      token1.tokenId,
+      token1.businessId,
+      2, // dealDetailNum, used as numAssetTokensForSettlement
+      3, // dealDetailNum2, not used here
+      at.address,
+      "EUR",
+      25,
+      sender.address,
+      receiver.address)
 
     console.log("\n[TEST] at.increaseAllowance()")
     await at.connect(receiver).increaseAllowance(dvp.address, 111)
@@ -254,7 +254,7 @@ describe("DVP.checkDeliveryForPot", function () {
     await dvp.checkDeliveryForPot(token1.tokenId)
 
     // now the DVP must own 2 ATs
-    let dvpBalance = await at.balanceOf(dvp.address)
+    const dvpBalance = await at.balanceOf(dvp.address)
     expect(dvpBalance).to.equal(2)
 
     // (10) bring the pot into PaymentConfirmed status
@@ -278,16 +278,16 @@ describe("DVP.checkDeliveryForPot", function () {
     // (3), (4) Let POT contract mint a POT
     console.log("\n[TEST] Minting POT")
     await pot.issuePaymentToken(
-        dvp.address, // to
-        token1.tokenId,
-        token1.businessId,
-        2, // dealDetailNum, used as numAssetTokensForSettlement
-        3, // dealDetailNum2, not used here
-        at.address,
-        "EUR",
-        25,
-        sender.address,
-        receiver.address)
+      dvp.address, // to
+      token1.tokenId,
+      token1.businessId,
+      2, // dealDetailNum, used as numAssetTokensForSettlement
+      3, // dealDetailNum2, not used here
+      at.address,
+      "EUR",
+      25,
+      sender.address,
+      receiver.address)
 
     console.log("\n[TEST] at.increaseAllowance()")
     await at.connect(receiver).increaseAllowance(dvp.address, 111)
@@ -298,8 +298,8 @@ describe("DVP.checkDeliveryForPot", function () {
 
     // (5)
     await expect(await dvp.checkDeliveryForPot(token1.tokenId)).to.emit(dvp, "DeliveryConfirmed").withArgs(
-        token1.tokenId,
-        at.address)
+      token1.tokenId,
+      at.address)
 
     console.log("\n[TEST] Detected DeliveryConfirmed Event")
   })

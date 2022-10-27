@@ -7,11 +7,11 @@ describe("DVP Upgradeability", function () {
 
   it("Tests DVP Upgradeability.", async function () {
 
-    let potFactory = await ethers.getContractFactory("POT")
-    let dvpFactory = await ethers.getContractFactory("DVP")
-    let dvp2Factory = await ethers.getContractFactory("DVPv2")
+    const potFactory = await ethers.getContractFactory("POT")
+    const dvpFactory = await ethers.getContractFactory("DVP")
+    const dvp2Factory = await ethers.getContractFactory("DVPv2")
 
-    let pot = await potFactory.deploy("Payment Order Token", "POT", "localhost")
+    const pot = await potFactory.deploy("Payment Order Token", "POT", "localhost")
     await pot.deployed()
 
     let dvp = await upgrades.deployProxy(dvpFactory, [pot.address])
@@ -26,7 +26,7 @@ describe("DVP Upgradeability", function () {
 
     // function must not be available
     expect(() => {
-     dvp.getFixFunction()
+      dvp.getFixFunction()
     }).to.throw(TypeError)
 
     dvp = await upgrades.upgradeProxy(dvp.address, dvp2Factory)

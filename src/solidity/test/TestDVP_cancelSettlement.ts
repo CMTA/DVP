@@ -15,7 +15,6 @@ let potFactory: ContractFactory
 let dvpFactory: ContractFactory
 let sender: SignerWithAddress
 let receiver: SignerWithAddress
-let addrs: SignerWithAddress[]
 
 /**
  * These variables are initialized in beforeEach() method
@@ -50,15 +49,12 @@ interface TokenTestData {
 }
 
 // Test data
-let atTestData: ATTestData = { contractName: "AssetToken", name: "Asset Token", symbol: "AT" }
-let potTestData: POTTestData = { contractName: "POT", name: "Payment Order Token", symbol: "POT", baseURI: "localhost" }
-let dvpTestData: DVPTestData = { contractName: "DVP" }
+const atTestData: ATTestData = { contractName: "AssetToken", name: "Asset Token", symbol: "AT" }
+const potTestData: POTTestData = { contractName: "POT", name: "Payment Order Token", symbol: "POT", baseURI: "localhost" }
+const dvpTestData: DVPTestData = { contractName: "DVP" }
 const businessId1 = "Deal_1"
 const businessId2 = "Deal_2"
-// note: token1 and token3 have the same businessId, token2's is different
 const token1: TokenTestData = { tokenId: BigNumber.from(1), businessId: businessId1 }
-const token2: TokenTestData = { tokenId: BigNumber.from(2), businessId: businessId2 }
-const token3: TokenTestData = { tokenId: BigNumber.from(3), businessId: businessId1 }
 
 // Supported interfaces
 const ERC_721: Hex = 0x80ac58cd
@@ -68,10 +64,10 @@ const ERC_721_Metadata: Hex = 0x5b5e139f
  * Contract factory and test accounts have to be requested only once for all tests
  */
 before(async function () {
-  atFactory  = await ethers.getContractFactory(atTestData.contractName);
-  potFactory = await ethers.getContractFactory(potTestData.contractName);
+  atFactory  = await ethers.getContractFactory(atTestData.contractName)
+  potFactory = await ethers.getContractFactory(potTestData.contractName)
   dvpFactory = await ethers.getContractFactory(dvpTestData.contractName);
-  [sender, receiver, ...addrs] = await ethers.getSigners();
+  [sender, receiver] = await ethers.getSigners()
 })
 
 /**
@@ -85,7 +81,7 @@ beforeEach(async function () {
   await pot.deployed()
 
   dvp = await upgrades.deployProxy(dvpFactory, [pot.address], {
-                      initializer: "initialize"})
+    initializer: "initialize"})
 
   await expect(dvp.initialize(pot.address)).to.be.revertedWith("Initializable: contract is already initialized")
 
@@ -111,16 +107,16 @@ describe("DVP.cancelSettlement", function () {
 
     console.log("\n[TEST] Minting POT")
     await pot.issuePaymentToken(
-        dvp.address, // to
-        token1.tokenId,
-        token1.businessId,
-        2, // dealDetailNum, used as numAssetTokensForSettlement
-        3, // dealDetailNum2, not used here
-        at.address,
-        "EUR",
-        25,
-        sender.address,
-        receiver.address)
+      dvp.address, // to
+      token1.tokenId,
+      token1.businessId,
+      2, // dealDetailNum, used as numAssetTokensForSettlement
+      3, // dealDetailNum2, not used here
+      at.address,
+      "EUR",
+      25,
+      sender.address,
+      receiver.address)
 
     // this brings the pot into PaymentInitiated status
     await pot.initiatePayment(token1.tokenId)
@@ -133,7 +129,7 @@ describe("DVP.cancelSettlement", function () {
     console.log("\n[TEST] POT state after pot.confirmPayment:" + await pot.statusToString(potStatus) + " (" + potStatus + ")")
     expect(potStatus).to.equal(1) // 1 = PaymentInitiated
 
-    let balanceBefore = await at.balanceOf(receiver.address)
+    const balanceBefore = await at.balanceOf(receiver.address)
     expect(balanceBefore).to.equal(0)
     console.log("[TEST] Before cancelSettlement, receiver's balance is 0.")
 
@@ -143,7 +139,7 @@ describe("DVP.cancelSettlement", function () {
     console.log("\n[TEST] POT state after dvp.cancelSettlement: " + await pot.statusToString(potStatus) + " (" + potStatus + ")")
     expect(potStatus).to.equal(3) // 3 = Deactivated
 
-    let balanceAfter = await at.balanceOf(receiver.address)
+    const balanceAfter = await at.balanceOf(receiver.address)
     expect(balanceAfter).to.equal(2)
     console.log("[TEST] After cancelSettlement, receiver's balance is back to 2.")
   })
@@ -155,16 +151,16 @@ describe("DVP.cancelSettlement", function () {
 
     console.log("\n[TEST] Minting POT")
     await pot.issuePaymentToken(
-        dvp.address, // to
-        token1.tokenId,
-        token1.businessId,
-        2, // dealDetailNum, used as numAssetTokensForSettlement
-        3, // dealDetailNum2, not used here
-        at.address,
-        "EUR",
-        25,
-        sender.address,
-        receiver.address)
+      dvp.address, // to
+      token1.tokenId,
+      token1.businessId,
+      2, // dealDetailNum, used as numAssetTokensForSettlement
+      3, // dealDetailNum2, not used here
+      at.address,
+      "EUR",
+      25,
+      sender.address,
+      receiver.address)
 
     // this brings the pot into PaymentInitiated status
     await pot.initiatePayment(token1.tokenId)
@@ -173,14 +169,14 @@ describe("DVP.cancelSettlement", function () {
     await at.mint(dvp.address, 5)
     console.log("[TEST] Minted AT")
 
-    let potStatus = await pot.getStatus(token1.tokenId)
+    const potStatus = await pot.getStatus(token1.tokenId)
     console.log("\n[TEST] POT state after pot.confirmPayment:" + await pot.statusToString(potStatus) + " (" + potStatus + ")")
     expect(potStatus).to.equal(1) // 1 = PaymentInitiated
 
     await expect(await dvp.cancelSettlement(token1.tokenId)).to.emit(dvp, "SettlementCanceled").withArgs(
-        token1.tokenId,
-        at.address,
-        receiver.address)
+      token1.tokenId,
+      at.address,
+      receiver.address)
 
     console.log("\n[TEST] Detected SettlementCanceled Event")
   })
@@ -192,16 +188,16 @@ describe("DVP.cancelSettlement", function () {
 
     console.log("\n[TEST] Minting POT")
     await pot.issuePaymentToken(
-        dvp.address, // to
-        token1.tokenId,
-        token1.businessId,
-        2, // dealDetailNum, used as numAssetTokensForSettlement
-        3, // dealDetailNum2, not used here
-        at.address,
-        "EUR",
-        25,
-        sender.address,
-        receiver.address)
+      dvp.address, // to
+      token1.tokenId,
+      token1.businessId,
+      2, // dealDetailNum, used as numAssetTokensForSettlement
+      3, // dealDetailNum2, not used here
+      at.address,
+      "EUR",
+      25,
+      sender.address,
+      receiver.address)
     // leads to (ERC721.sol): emit Transfer(address(0), to, tokenId);
     // this Event is caught by the DvP Manager, which then calls dvp.checkDeliveryForPot
 
@@ -212,7 +208,7 @@ describe("DVP.cancelSettlement", function () {
     await at.mint(dvp.address, 5)
     console.log("[TEST] Minted AT")
 
-    let potStatus = await pot.getStatus(token1.tokenId)
+    const potStatus = await pot.getStatus(token1.tokenId)
     console.log("\n[TEST] POT state after pot.confirmPayment:" + await pot.statusToString(potStatus) + " (" + potStatus + ")")
     await expect(potStatus).to.equal(1) // 1 = PaymentInitiated
 
@@ -226,16 +222,16 @@ describe("DVP.cancelSettlement", function () {
 
     console.log("\n[TEST] Minting POT")
     await pot.issuePaymentToken(
-        dvp.address, // to
-        token1.tokenId,
-        token1.businessId,
-        2, // dealDetailNum, used as numAssetTokensForSettlement
-        3, // dealDetailNum2, not used here
-        at.address,
-        "EUR",
-        25,
-        sender.address,
-        receiver.address)
+      dvp.address, // to
+      token1.tokenId,
+      token1.businessId,
+      2, // dealDetailNum, used as numAssetTokensForSettlement
+      3, // dealDetailNum2, not used here
+      at.address,
+      "EUR",
+      25,
+      sender.address,
+      receiver.address)
 
     await expect(dvp.cancelSettlement(token1.tokenId)).to.be.revertedWith("POT 1 does not have status 'Payment Initiated'.")
   })
@@ -247,16 +243,16 @@ describe("DVP.cancelSettlement", function () {
 
     console.log("\n[TEST] Minting POT")
     await pot.issuePaymentToken(
-        dvp.address, // to
-        token1.tokenId,
-        token1.businessId,
-        2, // dealDetailNum, used as numAssetTokensForSettlement
-        3, // dealDetailNum2, not used here
-        at.address,
-        "EUR",
-        25,
-        sender.address,
-        receiver.address)
+      dvp.address, // to
+      token1.tokenId,
+      token1.businessId,
+      2, // dealDetailNum, used as numAssetTokensForSettlement
+      3, // dealDetailNum2, not used here
+      at.address,
+      "EUR",
+      25,
+      sender.address,
+      receiver.address)
 
     await expect(dvp.connect(receiver).cancelSettlement(token1.tokenId)).to.be.revertedWith("Ownable: caller is not the owner")
   })
@@ -268,16 +264,16 @@ describe("DVP.cancelSettlement", function () {
 
     console.log("\n[TEST] Minting POT")
     await pot.issuePaymentToken(
-        dvp.address, // to
-        token1.tokenId,
-        token1.businessId,
-        2, // dealDetailNum, used as numAssetTokensForSettlement
-        3, // dealDetailNum2, not used here
-        at.address,
-        "EUR",
-        25,
-        sender.address,
-        receiver.address)
+      dvp.address, // to
+      token1.tokenId,
+      token1.businessId,
+      2, // dealDetailNum, used as numAssetTokensForSettlement
+      3, // dealDetailNum2, not used here
+      at.address,
+      "EUR",
+      25,
+      sender.address,
+      receiver.address)
 
     // this brings the pot into PaymentInitiated status
     await pot.initiatePayment(token1.tokenId)
@@ -286,7 +282,7 @@ describe("DVP.cancelSettlement", function () {
     await at.mint(dvp.address, 1)
     console.log("[TEST] Minted AT")
 
-    let potStatus = await pot.getStatus(token1.tokenId)
+    const potStatus = await pot.getStatus(token1.tokenId)
     console.log("\n[TEST] POT state after pot.confirmPayment:" + await pot.statusToString(potStatus) + " (" + potStatus + ")")
     expect(potStatus).to.equal(1) // 1 = PaymentInitiated
 
