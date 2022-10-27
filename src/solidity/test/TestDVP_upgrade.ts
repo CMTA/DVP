@@ -1,7 +1,5 @@
 import { expect } from "chai"
-import { HardhatRuntimeEnvironment } from "hardhat/types"
 import { ethers, upgrades } from "hardhat"
-import { ContractFactory, Contract } from "ethers"
 
 describe("DVP Upgradeability", function () {
 
