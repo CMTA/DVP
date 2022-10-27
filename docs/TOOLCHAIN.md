@@ -57,3 +57,10 @@ Type definitions for Node.js
 
 **[ethereum-waffle](https://www.npmjs.com/package/ethereum-waffle)**
 Framework for testing smart contracts, required by Hardhat
+
+
+### Linter
+
+**[eslint](https://eslint.org)**
+Static analyzer of the code, comes with [@typescript-eslint/eslint-plugin](https://www.npmjs.com/package/@typescript-eslint/eslint-plugin)
+and [@typescript-eslint/parser](https://www.npmjs.com/package/@typescript-eslint/parser)
