@@ -1,8 +1,8 @@
-import { ContractFactory } from "ethers";
-import { HardhatRuntimeEnvironment } from "hardhat/types";
+import { ContractFactory } from "ethers"
+import { HardhatRuntimeEnvironment } from "hardhat/types"
 import { contracts_addresses_filename } from './config'
-import "@nomiclabs/hardhat-ethers";
-import '@openzeppelin/hardhat-upgrades';
+import "@nomiclabs/hardhat-ethers"
+import '@openzeppelin/hardhat-upgrades'
 
 /**
  * Deploys DVP-Contract to the network configured via hardhat.
@@ -19,7 +19,7 @@ export async function deployDVP(hre: HardhatRuntimeEnvironment, single: boolean,
  * @param hre
  */
 export async function upgradeDVPtoV2(hre: HardhatRuntimeEnvironment) {
-    return await upgradeContract(hre, "cache/solpp-generated-contracts/DVPv2.sol:DVPv2", "DVP",
+    return await upgradeContract(hre, "cache/solpp-generated-contracts/test/DVPv2.sol:DVPv2", "DVP",
         "0x5b1869D9A4C187F2EAa108f3062412ecf0526b24" // DVP address!
         )
 }

@@ -1,21 +1,21 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.15 <0.9.0;
+pragma solidity 0.8.17;
 
 // #def LOG false
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
 import "./POT/IPOT.sol";
 
-import "./Log.sol";
 // #if LOG
+import "./Log.sol";
 import "hardhat/console.sol";
 // #endif
 
@@ -25,8 +25,10 @@ Initializable,
 PausableUpgradeable,
 OwnableUpgradeable,
 UUPSUpgradeable,
-ERC721Holder,
-Log
+ERC721HolderUpgradeable
+// #if LOG
+, Log
+// #endif
 {
     /** Address of POT SC. Set in initialize function. */
     address private potAddress;
@@ -109,10 +111,10 @@ Log
         address assetTokenAddress = IPOT(potAddress).getDealDetailAddress(tokenId);
         // receiver is owner, address(this) = DVP is spender
         address receiver = IPOT(potAddress).getReceiver(tokenId);
-        uint256 allowance = IERC20(assetTokenAddress).allowance(receiver, address(this));
+        uint256 allowance = IERC20Upgradeable(assetTokenAddress).allowance(receiver, address(this));
         // DealDetailNum contains the number of AssetTokens needed for settlement
         uint256 numAssetTokensForSettlement = IPOT(potAddress).getDealDetailNum(tokenId);
-        uint256 numAssetTokensOfReceiver = IERC20(assetTokenAddress).balanceOf(receiver);
+        uint256 numAssetTokensOfReceiver = IERC20Upgradeable(assetTokenAddress).balanceOf(receiver);
 
         // #if LOG
         console.log("\n[DVP] Balances before token transfer:");
@@ -136,7 +138,7 @@ Log
         // #endif
 
         // transfer AT from receiver to DvP
-        IERC20(assetTokenAddress).transferFrom(receiver, address(this), numAssetTokensForSettlement);
+        IERC20Upgradeable(assetTokenAddress).transferFrom(receiver, address(this), numAssetTokensForSettlement);
 
         // #if LOG
         console.log("\n[DVP] Balances after token transfer:");
@@ -180,7 +182,7 @@ Log
 
         // DealDetailAddress contains the AT contract address
         address assetTokenAddress = IPOT(potAddress).getDealDetailAddress(tokenId);
-        uint256 numAssetTokensOfDvP = IERC20(assetTokenAddress).balanceOf(address(this));
+        uint256 numAssetTokensOfDvP = IERC20Upgradeable(assetTokenAddress).balanceOf(address(this));
         // DealDetailNum contains the number of AT to be delivered in exchange for the POT
         uint256 numAssetTokensForSettlement = IPOT(potAddress).getDealDetailNum(tokenId);
         address sender = IPOT(potAddress).getSender(tokenId);
@@ -203,7 +205,7 @@ Log
         // #endif
 
         // transfer the ATs to the sender (of money)
-        IERC20(assetTokenAddress).transfer(sender, numAssetTokensForSettlement);
+        IERC20Upgradeable(assetTokenAddress).transfer(sender, numAssetTokensForSettlement);
 
         // #if LOG
         console.log("\n[DVP] Balances after token transfer:");
@@ -221,10 +223,10 @@ Log
         console.log("[DVP] numAssetTokensForSettlement:", IPOT(potAddress).getDealDetailNum(tokenId));
         address assetTokenAddress = IPOT(potAddress).getDealDetailAddress(tokenId);
         address receiver = IPOT(potAddress).getReceiver(tokenId);
-        console.log("[DVP] allowance                  :", IERC20(assetTokenAddress).allowance(receiver, address(this)));
-        console.log("[DVP] numAssetTokensOfReceiver   :", IERC20(assetTokenAddress).balanceOf(receiver));
-        console.log("[DVP] numAssetTokensOfSender     :", IERC20(assetTokenAddress).balanceOf(IPOT(potAddress).getSender(tokenId)));
-        console.log("[DVP] numAssetTokensOfDvP        :", IERC20(assetTokenAddress).balanceOf(address(this)));
+        console.log("[DVP] allowance                  :", IERC20Upgradeable(assetTokenAddress).allowance(receiver, address(this)));
+        console.log("[DVP] numAssetTokensOfReceiver   :", IERC20Upgradeable(assetTokenAddress).balanceOf(receiver));
+        console.log("[DVP] numAssetTokensOfSender     :", IERC20Upgradeable(assetTokenAddress).balanceOf(IPOT(potAddress).getSender(tokenId)));
+        console.log("[DVP] numAssetTokensOfDvP        :", IERC20Upgradeable(assetTokenAddress).balanceOf(address(this)));
     }
     // #endif
 
@@ -247,7 +249,7 @@ Log
         require(owner == address(this), string.concat("DvP is not owner of POT ", Strings.toString(tokenId)));
 
         address assetTokenAddress = IPOT(potAddress).getDealDetailAddress(tokenId);
-        uint256 numAssetTokensOfDvP = IERC20(assetTokenAddress).balanceOf(address(this));
+        uint256 numAssetTokensOfDvP = IERC20Upgradeable(assetTokenAddress).balanceOf(address(this));
         // DealDetailNum contains the number of AT to be delivered in exchange for the POT
         uint256 numAssetTokensForSettlement = IPOT(potAddress).getDealDetailNum(tokenId);
         // #if LOG
@@ -265,7 +267,7 @@ Log
 
         // send the number of AT to the receiver (of money) address
         address receiver = IPOT(potAddress).getReceiver(tokenId);
-        IERC20(assetTokenAddress).transfer(receiver, numAssetTokensForSettlement);
+        IERC20Upgradeable(assetTokenAddress).transfer(receiver, numAssetTokensForSettlement);
 
         // #if LOG
         console.log("\n[DVP] Emitting SettlementCanceled event");
@@ -337,6 +339,6 @@ Log
     pure
     returns (string memory)
     {
-        return "D1";
+        return "D2";
     }
 }
