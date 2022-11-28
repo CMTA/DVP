@@ -8,7 +8,7 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import "../POT/IPOT.sol";
 
@@ -115,10 +115,10 @@ ERC721HolderUpgradeable
         address assetTokenAddress = IPOT(potAddress).getDealDetailAddress(tokenId);
         // receiver is owner, address(this) = DVP is spender
         address receiver = IPOT(potAddress).getReceiver(tokenId);
-        uint256 allowance = IERC20Upgradeable(assetTokenAddress).allowance(receiver, address(this));
+        uint256 allowance = IERC20(assetTokenAddress).allowance(receiver, address(this));
         // DealDetailNum contains the number of AssetTokens needed for settlement
         uint256 numAssetTokensForSettlement = IPOT(potAddress).getDealDetailNum(tokenId);
-        uint256 numAssetTokensOfReceiver = IERC20Upgradeable(assetTokenAddress).balanceOf(receiver);
+        uint256 numAssetTokensOfReceiver = IERC20(assetTokenAddress).balanceOf(receiver);
 
         // #if LOG
         console.log("\n[DVP] Balances before token transfer:");
@@ -142,7 +142,7 @@ ERC721HolderUpgradeable
         // #endif
 
         // transfer AT from receiver to DvP
-        IERC20Upgradeable(assetTokenAddress).transferFrom(receiver, address(this), numAssetTokensForSettlement);
+        IERC20(assetTokenAddress).transferFrom(receiver, address(this), numAssetTokensForSettlement);
 
         // #if LOG
         console.log("\n[DVP] Balances after token transfer:");
@@ -186,7 +186,7 @@ ERC721HolderUpgradeable
 
         // DealDetailAddress contains the AT contract address
         address assetTokenAddress = IPOT(potAddress).getDealDetailAddress(tokenId);
-        uint256 numAssetTokensOfDvP = IERC20Upgradeable(assetTokenAddress).balanceOf(address(this));
+        uint256 numAssetTokensOfDvP = IERC20(assetTokenAddress).balanceOf(address(this));
         // DealDetailNum contains the number of AT to be delivered in exchange for the POT
         uint256 numAssetTokensForSettlement = IPOT(potAddress).getDealDetailNum(tokenId);
         address sender = IPOT(potAddress).getSender(tokenId);
@@ -209,7 +209,7 @@ ERC721HolderUpgradeable
         // #endif
 
         // transfer the ATs to the sender (of money)
-        IERC20Upgradeable(assetTokenAddress).transfer(sender, numAssetTokensForSettlement);
+        IERC20(assetTokenAddress).transfer(sender, numAssetTokensForSettlement);
 
         // #if LOG
         console.log("\n[DVP] Balances after token transfer:");
@@ -227,10 +227,10 @@ ERC721HolderUpgradeable
         console.log("[DVP] numAssetTokensForSettlement:", IPOT(potAddress).getDealDetailNum(tokenId));
         address assetTokenAddress = IPOT(potAddress).getDealDetailAddress(tokenId);
         address receiver = IPOT(potAddress).getReceiver(tokenId);
-        console.log("[DVP] allowance                  :", IERC20Upgradeable(assetTokenAddress).allowance(receiver, address(this)));
-        console.log("[DVP] numAssetTokensOfReceiver   :", IERC20Upgradeable(assetTokenAddress).balanceOf(receiver));
-        console.log("[DVP] numAssetTokensOfSender     :", IERC20Upgradeable(assetTokenAddress).balanceOf(IPOT(potAddress).getSender(tokenId)));
-        console.log("[DVP] numAssetTokensOfDvP        :", IERC20Upgradeable(assetTokenAddress).balanceOf(address(this)));
+        console.log("[DVP] allowance                  :", IERC20(assetTokenAddress).allowance(receiver, address(this)));
+        console.log("[DVP] numAssetTokensOfReceiver   :", IERC20(assetTokenAddress).balanceOf(receiver));
+        console.log("[DVP] numAssetTokensOfSender     :", IERC20(assetTokenAddress).balanceOf(IPOT(potAddress).getSender(tokenId)));
+        console.log("[DVP] numAssetTokensOfDvP        :", IERC20(assetTokenAddress).balanceOf(address(this)));
     }
     // #endif
 
@@ -253,7 +253,7 @@ ERC721HolderUpgradeable
         require(owner == address(this), string.concat("DvP is not owner of POT ", Strings.toString(tokenId)));
 
         address assetTokenAddress = IPOT(potAddress).getDealDetailAddress(tokenId);
-        uint256 numAssetTokensOfDvP = IERC20Upgradeable(assetTokenAddress).balanceOf(address(this));
+        uint256 numAssetTokensOfDvP = IERC20(assetTokenAddress).balanceOf(address(this));
         // DealDetailNum contains the number of AT to be delivered in exchange for the POT
         uint256 numAssetTokensForSettlement = IPOT(potAddress).getDealDetailNum(tokenId);
         // #if LOG
@@ -271,7 +271,7 @@ ERC721HolderUpgradeable
 
         // send the number of AT to the receiver (of money) address
         address receiver = IPOT(potAddress).getReceiver(tokenId);
-        IERC20Upgradeable(assetTokenAddress).transfer(receiver, numAssetTokensForSettlement);
+        IERC20(assetTokenAddress).transfer(receiver, numAssetTokensForSettlement);
 
         // #if LOG
         console.log("\n[DVP] Emitting SettlementCanceled event");
