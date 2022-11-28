@@ -4,7 +4,6 @@ pragma solidity >=0.8.15 <0.9.0;
 // #def LOG false
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol";
 import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
@@ -246,23 +245,23 @@ ERC721Pausable
 
     /**
      * @dev Changes the status of the POT to 'PaymentInitiated' and emits the 'PaymentInitiated' event.
-     * @param tokenId ID of the POT
+     * @param _tokenId ID of the POT
      */
     function initiatePayment(
-        uint256 tokenId
-        )
+        uint256 _tokenId
+    )
     external
     whenNotPaused()
     {
         //Check that message sender is owner of POT and that POT has status 'Issued'
-        require(_isApprovedOrOwner(_msgSender(), tokenId), "Message sender is not owner nor approved for POT");
-        require(idToBusiness[tokenId].status == potStatus.Issued, "POT does not have status 'Issued'");
+        require(_isApprovedOrOwner(_msgSender(), _tokenId), "Message sender is not owner nor approved for POT");
+        require(idToBusiness[_tokenId].status == potStatus.Issued, "POT does not have status 'Issued'");
         //Change status of POT to 'PaymentInitiated'
-        Business storage business = idToBusiness[tokenId];
+        Business storage business = idToBusiness[_tokenId];
         business.status = potStatus.PaymentInitiated;
         //Emit event PaymentInitiated
         emit PaymentInitiated(
-                tokenId,
+                _tokenId,
                 business.sender,
                 business.receiver,
                 business.businessId,
@@ -271,28 +270,28 @@ ERC721Pausable
                 business.dealDetailAddress,
                 business.finalAmount,
                 business.currency,
-                tokenURI(tokenId));
+                tokenURI(_tokenId));
     }
 
     /**
     * @dev Changes the status of the POT to 'PaymentConfirmed' and emits the 'PaymentConfirmed' event.
-    * @param tokenId ID of the POT
+    * @param _tokenId ID of the POT
     */
     function confirmPayment(
-        uint256 tokenId
+        uint256 _tokenId
     )
     external
     onlyOwner
     whenNotPaused()
     {
         //Check that POT has status 'PaymentInitiated'
-        require(idToBusiness[tokenId].status == potStatus.PaymentInitiated, "POT does not have status 'PaymentInitiated'");
+        require(idToBusiness[_tokenId].status == potStatus.PaymentInitiated, "POT does not have status 'PaymentInitiated'");
         //Change status of POT to 'PaymentConfirmed'
-        Business storage business = idToBusiness[tokenId];
+        Business storage business = idToBusiness[_tokenId];
         business.status = potStatus.PaymentConfirmed;
         //Emit event PaymentConfirmed
         emit PaymentConfirmed(
-                tokenId,
+                _tokenId,
                 business.sender,
                 business.receiver,
                 business.businessId,
@@ -301,28 +300,28 @@ ERC721Pausable
                 business.dealDetailAddress,
                 business.finalAmount,
                 business.currency,
-                tokenURI(tokenId));
+                tokenURI(_tokenId));
     }
 
     /**
      * @dev Changes the status of the POT to 'Deactivated' and emits the 'PotDeactivated' event.
-     * @param tokenId ID of the POT
+     * @param _tokenId ID of the POT
      */
     function deactivatePot(
-        uint256 tokenId
+        uint256 _tokenId
     )
     external
     whenNotPaused()
     {
         //Check that message sender is owner of POT and that POT does not have status 'Deactivated'
-        require(_isApprovedOrOwner(_msgSender(), tokenId), "Message sender is not owner nor approved for POT");
-        if (idToBusiness[tokenId].status == potStatus.Deactivated) {revert("POT already has status 'Deactivated'");}
+        require(_isApprovedOrOwner(_msgSender(), _tokenId), "Message sender is not owner nor approved for POT");
+        if (idToBusiness[_tokenId].status == potStatus.Deactivated) {revert("POT already has status 'Deactivated'");}
         //Change status of POT to 'Deactivated'
-        Business storage business = idToBusiness[tokenId];
+        Business storage business = idToBusiness[_tokenId];
         business.status = potStatus.Deactivated;
         //Emit event PotDeactivated
         emit PotDeactivated(
-                tokenId,
+                _tokenId,
                 business.sender,
                 business.receiver,
                 business.businessId,
@@ -331,7 +330,7 @@ ERC721Pausable
                 business.dealDetailAddress,
                 business.finalAmount,
                 business.currency,
-                tokenURI(tokenId));
+                tokenURI(_tokenId));
     }
 
     /**
@@ -378,11 +377,11 @@ ERC721Pausable
         return ownerToTokenIds[owner];
     }
 
-    function changeAmount(uint256 tokenId, uint256 amount)
+    function changeAmount(uint256 _tokenId, uint256 amount)
     external
     whenNotPaused()
     {
-        _changeFinalAmount(tokenId, amount);
+        _changeFinalAmount(_tokenId, amount);
     }
 
     /**

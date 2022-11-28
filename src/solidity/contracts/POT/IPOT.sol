@@ -13,10 +13,10 @@ interface IPOT is IERC721
         Deactivated
     }
 
-    function initiatePayment(uint256 tokenId)
+    function initiatePayment(uint256 _tokenId)
     external;
 
-    function deactivatePot(uint256 tokenId)
+    function deactivatePot(uint256 _tokenId)
     external;
 
     function getMintTime(uint256 _tokenId)
