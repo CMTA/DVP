@@ -87,11 +87,14 @@ ERC721HolderUpgradeable
     external
     whenNotPaused()
     {
+        // #if LOG
+        console.log("[DVP] DVP.checkDeliveryForPot(", tokenId, ")");
+        // #endif
+
         address owner = IPOT(potAddress).ownerOf(tokenId);
         IPOT.potStatus potStatus = IPOT(potAddress).getStatus(tokenId);
 
         // #if LOG
-        console.log("[DVP] DVP.checkDeliveryForPot(", tokenId, ")");
         console.log("[DVP] owner:", nice(owner), "Status:", Log.statusToString(potStatus));
         // #endif
 
