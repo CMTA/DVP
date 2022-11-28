@@ -29,7 +29,7 @@ ERC721HolderUpgradeable
 // #endif
 {
     /** Address of POT SC. Set in initialize function. */
-    address private potAddress;
+    IPOT private potAddress;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -39,7 +39,7 @@ ERC721HolderUpgradeable
     /**
      * @dev For upgradeability, this function replaces the constructor
      */
-    function initialize(address _potAddress)
+    function initialize(IPOT _potAddress)
     public
     initializer
     {
@@ -300,7 +300,7 @@ ERC721HolderUpgradeable
     /**
      * Sets the potAddress.
      */
-    function setPotAddress(address _potAddress)
+    function setPotAddress(IPOT _potAddress)
     external
     onlyOwner
     {
@@ -313,7 +313,7 @@ ERC721HolderUpgradeable
     function getPotAddress()
     public
     view
-    returns (address)
+    returns (IPOT)
     {
         return potAddress;
     }
