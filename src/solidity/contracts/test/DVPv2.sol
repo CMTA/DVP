@@ -115,7 +115,6 @@ ERC721HolderUpgradeable
         address assetTokenAddress = IPOT(potAddress).getDealDetailAddress(tokenId);
         // receiver is owner, address(this) = DVP is spender
         address receiver = IPOT(potAddress).getReceiver(tokenId);
-        uint256 allowance = IERC20(assetTokenAddress).allowance(receiver, address(this));
         // DealDetailNum contains the number of AssetTokens needed for settlement
         uint256 numAssetTokensForSettlement = IPOT(potAddress).getDealDetailNum(tokenId);
         uint256 numAssetTokensOfReceiver = IERC20(assetTokenAddress).balanceOf(receiver);
@@ -125,12 +124,6 @@ ERC721HolderUpgradeable
         logBalances(tokenId);
         // #endif
 
-        // if the number of tokens needed exceeds the allowance, revert
-        if (numAssetTokensForSettlement > allowance) {
-            revert(string.concat("Allowance ", Strings.toString(allowance), " not sufficient to settle POT ",
-                Strings.toString(tokenId), ". Allowance of minimum ", Strings.toString(numAssetTokensForSettlement), " needed."));
-        }
-
         // if the receiver's balance is less than required, revert
         if (numAssetTokensOfReceiver < numAssetTokensForSettlement) {
             revert(string.concat("Balance ", Strings.toString(numAssetTokensOfReceiver), " of receiver not sufficient to settle POT ",
@@ -138,7 +131,7 @@ ERC721HolderUpgradeable
         }
 
         // #if LOG
-        console.log("\n[DVP] Number of asset tokens for settlement is not larger than allowance, receiver holds enough tokens, so transferring the tokens to DvP");
+        console.log("\n[DVP] Receiver holds enough tokens, so transferring the tokens to DvP");
         // #endif
 
         // transfer AT from receiver to DvP

@@ -124,37 +124,6 @@ describe("DVP.checkDeliveryForPot", function () {
     await expect(dvp.checkDeliveryForPot(token1.tokenId)).to.be.revertedWith("DvP is not owner of POT 1.")
   })
 
-  it("Tests that checkDeliveryForPot is only executed with a sufficient allowance.", async () => {
-    // (3), (4) Let POT contract mint a POT
-    console.log("\n[TEST] Minting POT")
-    await pot.issuePaymentToken(
-      dvp.address, // to
-      token1.tokenId,
-      token1.businessId,
-      2, // dealDetailNum
-      3, // dealDetailNum2
-      at.address,
-      "EUR",
-      25,
-      sender.address,
-      receiver.address)
-
-    // (5) No allowance was set, so there must be the following error
-    await expect(dvp.checkDeliveryForPot(token1.tokenId)).to.be.revertedWith("Allowance 0 not sufficient to settle POT 1. Allowance of minimum 2 needed.")
-
-    // set the allowance to 1
-    await at.connect(receiver).increaseAllowance(dvp.address, 1)
-
-    // still not enough
-    await expect(dvp.checkDeliveryForPot(token1.tokenId)).to.be.revertedWith("Allowance 1 not sufficient to settle POT 1. Allowance of minimum 2 needed.")
-
-    // increase the allowance to 3
-    await at.connect(receiver).increaseAllowance(dvp.address, 2)
-
-    // now, checkDeliveryForPot must succeed
-    dvp.checkDeliveryForPot(token1.tokenId)
-  })
-
   it("Tests that checkDeliveryForPot is only executed with a sufficient balance.", async () => {
     // (3), (4) Let POT contract mint a POT
     console.log("\n[TEST] Minting POT")
