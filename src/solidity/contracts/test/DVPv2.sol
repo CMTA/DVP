@@ -68,17 +68,17 @@ ERC721HolderUpgradeable
     /**
      * @dev Logs the confirmation of the delivery of a valid POT and the associated AT to the DvP.
      */
-    event DeliveryConfirmed(uint256 indexed _tokenId, address indexed _numAt);
+    event DeliveryConfirmed(uint256 indexed tokenId, address indexed assetTokenAddress);
 
     /**
      * @dev Logs the execution of the delivery of AT to the sender of a valid POT.
      */
-    event DeliveryExecuted(uint256 indexed _tokenId, address indexed _numAt, address indexed to);
+    event DeliveryExecuted(uint256 indexed tokenId, address indexed assetTokenAddress, address indexed to);
 
     /**
      * @dev Logs the cancellation of the settlement of a POT.
      */
-    event SettlementCanceled(uint256 indexed _tokenId, address indexed _numAt, address indexed to);
+    event SettlementCanceled(uint256 indexed tokenId, address indexed assetTokenAddress, address indexed to);
 
     /**
      * Checks, for a specific POT, that
