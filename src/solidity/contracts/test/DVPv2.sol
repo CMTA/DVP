@@ -127,7 +127,8 @@ ERC721HolderUpgradeable
         // #endif
 
         // transfer AT from receiver to DvP
-        IERC20(assetTokenAddress).transferFrom(receiver, address(this), numAssetTokensForSettlement);
+        bool transferOK = IERC20(assetTokenAddress).transferFrom(receiver, address(this), numAssetTokensForSettlement);
+        require(transferOK, "Token transfer failed.");
 
         // #if LOG
         console.log("\n[DVP] Balances after token transfer:");
@@ -182,7 +183,8 @@ ERC721HolderUpgradeable
         // #endif
 
         // transfer the ATs to the sender (of money)
-        IERC20(assetTokenAddress).transfer(sender, numAssetTokensForSettlement);
+        bool transferOK = IERC20(assetTokenAddress).transfer(sender, numAssetTokensForSettlement);
+        require(transferOK, "Token transfer failed.");
 
         // #if LOG
         console.log("\n[DVP] Balances after token transfer:");
@@ -241,7 +243,8 @@ ERC721HolderUpgradeable
         IPOT(potAddress).deactivatePot(tokenId);
 
         // send the number of AT to the receiver (of money) address
-        IERC20(assetTokenAddress).transfer(receiver, numAssetTokensForSettlement);
+        bool transferOK = IERC20(assetTokenAddress).transfer(receiver, numAssetTokensForSettlement);
+        require(transferOK, "Token transfer failed.");
 
         // #if LOG
         console.log("\n[DVP] Emitting SettlementCanceled event");
