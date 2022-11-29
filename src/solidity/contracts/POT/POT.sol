@@ -567,6 +567,18 @@ ERC721Pausable
         return (idToBusiness[_tokenId].status, idToBusiness[_tokenId].mintTime);
     }
 
+    function getDetailsForSettlement(uint256 _tokenId)
+    external
+    view
+    returns (potStatus, address, address, uint256, address)
+    {
+        return (idToBusiness[_tokenId].status,
+                ownerOf(_tokenId),
+                idToBusiness[_tokenId].dealDetailAddress,
+                idToBusiness[_tokenId].dealDetailNum,
+                idToBusiness[_tokenId].receiver);
+    }
+
     function getVersion()
     external
     pure

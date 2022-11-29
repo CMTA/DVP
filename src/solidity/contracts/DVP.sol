@@ -239,20 +239,18 @@ ERC721HolderUpgradeable
     whenNotPaused()
     onlyOwner
     {
+        (IPOT.potStatus potStatus, address owner, address assetTokenAddress, uint256 numAssetTokensForSettlement,
+            address receiver) = IPOT(potAddress).getDetailsForSettlement(tokenId);
+
         // if the POT is not in "Payment Initiated" status, revert
-        IPOT.potStatus potStatus = IPOT(potAddress).getStatus(tokenId);
         if (potStatus != IPOT.potStatus.PaymentInitiated) {
             revert(string.concat("POT ", Strings.toString(tokenId), " does not have status 'Payment Initiated'."));
         }
 
         // require that DvP has ownership over the POT
-        address owner = IPOT(potAddress).ownerOf(tokenId);
         require(owner == address(this), string.concat("DvP is not owner of POT ", Strings.toString(tokenId)));
 
-        address assetTokenAddress = IPOT(potAddress).getDealDetailAddress(tokenId);
         uint256 numAssetTokensOfDvP = IERC20(assetTokenAddress).balanceOf(address(this));
-        // DealDetailNum contains the number of AT to be delivered in exchange for the POT
-        uint256 numAssetTokensForSettlement = IPOT(potAddress).getDealDetailNum(tokenId);
         // #if LOG
         logBalances(tokenId);
         // #endif
@@ -267,7 +265,6 @@ ERC721HolderUpgradeable
         IPOT(potAddress).deactivatePot(tokenId);
 
         // send the number of AT to the receiver (of money) address
-        address receiver = IPOT(potAddress).getReceiver(tokenId);
         IERC20(assetTokenAddress).transfer(receiver, numAssetTokensForSettlement);
 
         // #if LOG
