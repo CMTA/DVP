@@ -114,21 +114,10 @@ ERC721HolderUpgradeable
         address receiver = IPOT(potAddress).getReceiver(tokenId);
         // DealDetailNum contains the number of AssetTokens needed for settlement
         uint256 numAssetTokensForSettlement = IPOT(potAddress).getDealDetailNum(tokenId);
-        uint256 numAssetTokensOfReceiver = IERC20(assetTokenAddress).balanceOf(receiver);
 
         // #if LOG
-        console.log("\n[DVP] Balances before token transfer:");
+        console.log("\n[DVP] Balances before token transfer to DvP:");
         logBalances(tokenId);
-        // #endif
-
-        // if the receiver's balance is less than required, revert
-        if (numAssetTokensOfReceiver < numAssetTokensForSettlement) {
-            revert(string.concat("Balance ", Strings.toString(numAssetTokensOfReceiver), " of receiver not sufficient to settle POT ",
-                Strings.toString(tokenId), ". Balance of minimum ", Strings.toString(numAssetTokensForSettlement), " needed."));
-        }
-
-        // #if LOG
-        console.log("\n[DVP] Receiver holds enough tokens, so transferring the tokens to DvP");
         // #endif
 
         // transfer AT from receiver to DvP
