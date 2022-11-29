@@ -46,9 +46,9 @@ ERC721HolderUpgradeable
         // #if LOG
         console.log("[DVP] Initializing DVP");
         // #endif
-        __Pausable_init();
-        __Ownable_init();
-        __UUPSUpgradeable_init();
+        __Pausable_init_unchained();
+        __Ownable_init_unchained();
+        __UUPSUpgradeable_init_unchained();
 
         potAddress = _potAddress;
     }
