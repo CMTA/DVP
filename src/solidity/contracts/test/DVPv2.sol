@@ -287,14 +287,14 @@ ERC721HolderUpgradeable
     whenNotPaused()
     onlyOwner
     {
+        (IPOT.potStatus potStatus, uint256 mintTime) = IPOT(potAddress).getStatusAndMintTime(tokenId);
+
         // if the POT is not in "Issued" status, revert
-        IPOT.potStatus potStatus = IPOT(potAddress).getStatus(tokenId);
         if (potStatus != IPOT.potStatus.Issued) {
             revert(string.concat("POT ", Strings.toString(tokenId), " does not have status 'Issued'."));
         }
 
         // if the POT is not older than 4 days, revert
-        uint256 mintTime = IPOT(potAddress).getMintTime(tokenId);
         uint256 potAge = block.timestamp - mintTime; // Note: "now" has been deprecated. Use "block.timestamp" instead.
         if (potAge < 4 days) {
             revert(string.concat("POT ", Strings.toString(tokenId), " is not older than 96 hours."));

@@ -559,6 +559,14 @@ ERC721Pausable
         return idToBusiness[_tokenId].mintTime;
     }
 
+    function getStatusAndMintTime(uint256 _tokenId)
+    external
+    view
+    returns (potStatus, uint256)
+    {
+        return (idToBusiness[_tokenId].status, idToBusiness[_tokenId].mintTime);
+    }
+
     function getVersion()
     external
     pure

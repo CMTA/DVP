@@ -13,6 +13,11 @@ interface IPOT is IERC721
         Deactivated
     }
 
+    function getStatus(uint256 _tokenId)
+    external
+    view
+    returns (potStatus);
+
     function initiatePayment(uint256 _tokenId)
     external;
 
@@ -24,10 +29,10 @@ interface IPOT is IERC721
     view
     returns (uint256);
 
-    function getStatus(uint256 _tokenId)
+    function getStatusAndMintTime(uint256 _tokenId)
     external
     view
-    returns (potStatus);
+    returns (potStatus, uint256);
 
     function getSender(uint256 _tokenId)
     external
