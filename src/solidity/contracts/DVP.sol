@@ -182,18 +182,10 @@ ERC721HolderUpgradeable
         console.log("[DVP] DvP is owner of the POT");
         // #endif
 
-        uint256 numAssetTokensOfDvP = IERC20(assetTokenAddress).balanceOf(address(this));
-
         // #if LOG
         console.log("\n[DVP] Balances before transferring Asset Tokens from DVP to sender:");
         logBalances(tokenId);
         // #endif
-
-        // if the number of AT in escrow is smaller than the number of AT held by the DvP, revert
-        if (numAssetTokensOfDvP < numAssetTokensForSettlement) {
-            revert(string.concat("AT-Balance ", Strings.toString(numAssetTokensOfDvP), " not sufficient for delivery. Minimum ",
-                Strings.toString(numAssetTokensForSettlement), " needed."));
-        }
 
         IPOT(potAddress).deactivatePot(tokenId);
 
