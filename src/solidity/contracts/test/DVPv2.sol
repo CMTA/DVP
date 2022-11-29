@@ -168,8 +168,10 @@ ERC721HolderUpgradeable
     external
     whenNotPaused()
     {
+        (IPOT.potStatus potStatus, address owner, address assetTokenAddress,
+            uint256 numAssetTokensForSettlement, address sender) = IPOT(potAddress).getDetailsForDelivery(tokenId);
+
         // if the POT is not in "Payment Confirmed" status, revert
-        IPOT.potStatus potStatus = IPOT(potAddress).getStatus(tokenId);
         if (potStatus != IPOT.potStatus.PaymentConfirmed) {
             revert(string.concat("POT ", Strings.toString(tokenId), " does not have status 'Payment Confirmed'."));
         }
@@ -178,18 +180,12 @@ ERC721HolderUpgradeable
         // #endif
 
         // require that DvP has ownership over the POT
-        address owner = IPOT(potAddress).ownerOf(tokenId);
         require(owner == address(this), string.concat("DvP is not owner of POT ", Strings.toString(tokenId)));
         // #if LOG
         console.log("[DVP] DvP is owner of the POT");
         // #endif
 
-        // DealDetailAddress contains the AT contract address
-        address assetTokenAddress = IPOT(potAddress).getDealDetailAddress(tokenId);
         uint256 numAssetTokensOfDvP = IERC20(assetTokenAddress).balanceOf(address(this));
-        // DealDetailNum contains the number of AT to be delivered in exchange for the POT
-        uint256 numAssetTokensForSettlement = IPOT(potAddress).getDealDetailNum(tokenId);
-        address sender = IPOT(potAddress).getSender(tokenId);
 
         // #if LOG
         console.log("\n[DVP] Balances before transferring Asset Tokens from DVP to sender:");

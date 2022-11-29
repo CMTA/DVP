@@ -579,6 +579,18 @@ ERC721Pausable
                 idToBusiness[_tokenId].receiver);
     }
 
+    function getDetailsForDelivery(uint256 _tokenId)
+    external
+    view
+    returns (potStatus, address, address, uint256, address)
+    {
+        return (idToBusiness[_tokenId].status,
+                ownerOf(_tokenId),//  = IPOT(potAddress).ownerOf(tokenId);
+                idToBusiness[_tokenId].dealDetailAddress,
+                idToBusiness[_tokenId].dealDetailNum,
+                idToBusiness[_tokenId].sender);
+    }
+
     function getVersion()
     external
     pure

@@ -39,10 +39,23 @@ interface IPOT is IERC721
      * - potStatus
      * - address of owner
      * - address of AssetToken
-     * - uint256 number of AT to be delivered in exchange for the POT
+     * - number of AT to be delivered in exchange for the POT
      * - address of receiver
      */
     function getDetailsForSettlement(uint256 _tokenId)
+    external
+    view
+    returns (potStatus, address, address, uint256, address);
+
+    /**
+     * @dev Returns
+     * - potStatus
+     * - address of owner
+     * - address of AssetToken
+     * - number of AT to be delivered in exchange for the POT
+     * - address of sender
+     */
+    function getDetailsForDelivery(uint256 _tokenId)
     external
     view
     returns (potStatus, address, address, uint256, address);
