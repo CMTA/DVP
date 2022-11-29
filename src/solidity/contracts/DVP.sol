@@ -57,7 +57,10 @@ ERC721HolderUpgradeable
     internal
     onlyOwner
     override
-    {}
+    {
+        // Overrides virtual function from UUPSUpgradeable.sol.
+        // No implementation; access control is relevant.
+    }
 
     /**
      * @dev Logs the confirmation of the delivery of a valid POT and the associated AT to the DvP.
