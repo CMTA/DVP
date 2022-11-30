@@ -94,8 +94,8 @@ ERC721HolderUpgradeable
         console.log("[DVP] DVP.checkDeliveryForPot(", tokenId, ")");
         // #endif
 
-        address owner = IPOT(potAddress).ownerOf(tokenId);
-        IPOT.potStatus potStatus = IPOT(potAddress).getStatus(tokenId);
+        (IPOT.potStatus potStatus, address owner, address assetTokenAddress, uint256 numAssetTokensForSettlement,
+            address receiver) = IPOT(potAddress).getDetails(tokenId);
 
         // #if LOG
         console.log("[DVP] owner:", nice(owner), "Status:", Log.statusToString(potStatus));
@@ -114,12 +114,6 @@ ERC721HolderUpgradeable
         // #if LOG
         console.log("[DVP] DvP is owner of the POT");
         // #endif
-
-        address assetTokenAddress = IPOT(potAddress).getDealDetailAddress(tokenId);
-        // receiver is owner, address(this) = DVP is spender
-        address receiver = IPOT(potAddress).getReceiver(tokenId);
-        // DealDetailNum contains the number of AssetTokens needed for settlement
-        uint256 numAssetTokensForSettlement = IPOT(potAddress).getDealDetailNum(tokenId);
 
         // #if LOG
         console.log("\n[DVP] Balances before token transfer to DvP:");
@@ -218,7 +212,7 @@ ERC721HolderUpgradeable
     onlyOwner
     {
         (IPOT.potStatus potStatus, address owner, address assetTokenAddress, uint256 numAssetTokensForSettlement,
-            address receiver) = IPOT(potAddress).getDetailsForSettlement(tokenId);
+            address receiver) = IPOT(potAddress).getDetails(tokenId);
 
         // if the POT is not in "Payment Initiated" status, revert
         if (potStatus != IPOT.potStatus.PaymentInitiated) {

@@ -42,7 +42,7 @@ interface IPOT is IERC721
      * - number of AT to be delivered in exchange for the POT
      * - address of receiver
      */
-    function getDetailsForSettlement(uint256 _tokenId)
+    function getDetails(uint256 _tokenId)
     external
     view
     returns (potStatus, address, address, uint256, address);

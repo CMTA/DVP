@@ -103,10 +103,10 @@ ERC721Pausable
         string tokenURI);
 
     /**
-    * @dev This event is emitted when the final amount of a POT is changed. It is registered by the payment adapter and
-    *      causes a change of the final amount of the POT in its database.
-    * @param finalAmount which will be updated in the payment adapter.
-    */
+     * @dev This event is emitted when the final amount of a POT is changed. It is registered by the payment adapter and
+     *      causes a change of the final amount of the POT in its database.
+     * @param finalAmount which will be updated in the payment adapter.
+     */
     event ChangeFinalAmount(
         uint256 indexed tokenId,
         uint256 finalAmount,
@@ -274,9 +274,9 @@ ERC721Pausable
     }
 
     /**
-    * @dev Changes the status of the POT to 'PaymentConfirmed' and emits the 'PaymentConfirmed' event.
-    * @param _tokenId ID of the POT
-    */
+     * @dev Changes the status of the POT to 'PaymentConfirmed' and emits the 'PaymentConfirmed' event.
+     * @param _tokenId ID of the POT
+     */
     function confirmPayment(
         uint256 _tokenId
     )
@@ -385,11 +385,11 @@ ERC721Pausable
     }
 
     /**
-    * @dev Changes final amount of the NFT.
-    * @notice Changes the final amount. This can be only done by the receiver of the NFT
-    *         and can only be less than the initial amount.
-    * @param _tokenId and _amount to change the final amount variable
-    */
+     * @dev Changes final amount of the NFT.
+     * @notice Changes the final amount. This can be only done by the receiver of the NFT
+     *         and can only be less than the initial amount.
+     * @param _tokenId and _amount to change the final amount variable
+     */
     function _changeFinalAmount(uint256 _tokenId, uint256 _amount)
     internal
     onlyReceiver(_tokenId)
@@ -567,7 +567,7 @@ ERC721Pausable
         return (idToBusiness[_tokenId].status, idToBusiness[_tokenId].mintTime);
     }
 
-    function getDetailsForSettlement(uint256 _tokenId)
+    function getDetails(uint256 _tokenId)
     external
     view
     returns (potStatus, address, address, uint256, address)
@@ -614,11 +614,11 @@ ERC721Pausable
     }
 
     /**
-    * Removes a specific value from an array.
-    * Replaces the value to be removed by the last entry in the list and popping the last value from the list afterwards.
-    *
-    * IMPORTANT: Order of elements in the array changes
-    */
+     * Removes a specific value from an array.
+     * Replaces the value to be removed by the last entry in the list and popping the last value from the list afterwards.
+     *
+     * IMPORTANT: Order of elements in the array changes
+     */
     function _remove(uint256 valueToFindAndRemove, uint256[] storage array)
     internal
     {
