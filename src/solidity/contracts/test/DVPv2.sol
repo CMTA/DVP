@@ -81,6 +81,11 @@ ERC721HolderUpgradeable
     event SettlementCanceled(uint256 indexed tokenId, address indexed assetTokenAddress, address indexed to);
 
     /**
+     * @dev Logs change of the POT address.
+     */
+    event POTAddressChanged(IPOT indexed potAddress);
+
+    /**
      * Checks, for a specific POT, that
      * (1) the POT is owned by the DvP and
      * (2) the DvP has a sufficient allowance for the AT of the receiver to settle the POT.
@@ -270,7 +275,10 @@ ERC721HolderUpgradeable
     external
     onlyOwner
     {
-        potAddress = _potAddress;
+        if (potAddress != _potAddress) {
+            potAddress = _potAddress;
+            emit POTAddressChanged(potAddress);
+        }
     }
 
     /**
