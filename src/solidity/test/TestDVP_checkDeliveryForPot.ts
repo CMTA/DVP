@@ -145,6 +145,58 @@ describe("DVP.checkDeliveryForPot", function () {
     await expect(dvp.checkDeliveryForPot(token1.tokenId)).to.be.revertedWith("reverted with reason string 'ERC20: transfer amount exceeds balance'")
   })
 
+  it("Tests that checkDeliveryForPot is only executed with a sufficient allowance.", async () => {
+    // (3), (4) Let POT contract mint a POT
+    console.log("\n[TEST] Minting POT")
+    await pot.issuePaymentToken(
+      dvp.address, // to
+      token1.tokenId,
+      token1.businessId,
+      2, // dealDetailNum
+      3, // dealDetailNum2
+      at.address,
+      "EUR",
+      25,
+      sender.address,
+      receiver.address)
+
+    // (5) No allowance was set, so there must be the following error
+    await expect(dvp.checkDeliveryForPot(token1.tokenId)).to.be.revertedWith("reverted with reason string 'ERC20: insufficient allowance'")
+
+    // set the allowance to 1
+    await at.connect(receiver).increaseAllowance(dvp.address, 1)
+
+    // still not enough
+    await expect(dvp.checkDeliveryForPot(token1.tokenId)).to.be.revertedWith("reverted with reason string 'ERC20: insufficient allowance'")
+
+    // increase the allowance to 3
+    await at.connect(receiver).increaseAllowance(dvp.address, 2)
+
+    // now, checkDeliveryForPot must succeed
+    dvp.checkDeliveryForPot(token1.tokenId)
+  })
+
+  it("Tests that checkDeliveryForPot is only executed with a sufficient balance.", async () => {
+    // (3), (4) Let POT contract mint a POT
+    console.log("\n[TEST] Minting POT")
+    await pot.issuePaymentToken(
+      dvp.address, // to
+      token1.tokenId,
+      token1.businessId,
+      10, // dealDetailNum = number of AssetTokens needed for settlement
+      3, // dealDetailNum2
+      at.address,
+      "EUR",
+      25,
+      sender.address,
+      receiver.address)
+
+    // increase the allowance to 2
+    await at.connect(receiver).increaseAllowance(dvp.address, 20)
+
+    await expect(dvp.checkDeliveryForPot(token1.tokenId)).to.be.revertedWith("reverted with reason string 'ERC20: transfer amount exceeds balance'")
+  })
+
   it("Tests that the correct amount of ATs is transferred to the DVP.", async function () {
     console.log("dvp.address      = " + dvp.address)
     console.log("sender.address   = " + sender.address)
