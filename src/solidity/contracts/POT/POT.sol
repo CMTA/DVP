@@ -53,65 +53,6 @@ ERC721Pausable
 
     using Strings for uint256;
 
-    /**
-     * @dev The payment adapter detects this event and initiates the associated bank transfer
-     * @param tokenId, sender, receiver, businessId, dealDetailNum, dealDetailNum2, dealDetailAddress, finalAmount, currency and tokenURI of POT
-     */
-    event PaymentInitiated(
-        uint256 indexed tokenId,
-        address indexed sender,
-        address indexed receiver,
-        string businessId,
-        uint256 dealDetailNum,
-        uint256 dealDetailNum2,
-        address dealDetailAddress,
-        uint256 finalAmount,
-        string currency,
-        string tokenURI);
-
-    /**
-     * @dev This event is emitted when the payment adapter confirms the payment associated with the POT.
-     *      It can be used to trigger deliveries in a DvP setup.
-     * @param tokenId, sender, receiver, businessId, dealDetailNum, dealDetailNum2, dealDetailAddress, finalAmount, currency and tokenURI of POT
-     */
-    event PaymentConfirmed(
-        uint256 indexed tokenId,
-        address indexed sender,
-        address indexed receiver,
-        string businessId,
-        uint256 dealDetailNum,
-        uint256 dealDetailNum2,
-        address dealDetailAddress,
-        uint256 finalAmount,
-        string currency,
-        string tokenURI);
-
-    /**
-     * @dev This event is emitted when a Pot is deactivated by its owner.
-     * @param tokenId, sender, receiver, businessId, dealDetailNum, dealDetailNum2, dealDetailAddress, finalAmount, currency and tokenURI of POT
-     */
-    event PotDeactivated(
-        uint256 indexed tokenId,
-        address indexed sender,
-        address indexed receiver,
-        string businessId,
-        uint256 dealDetailNum,
-        uint256 dealDetailNum2,
-        address dealDetailAddress,
-        uint256 finalAmount,
-        string currency,
-        string tokenURI);
-
-    /**
-     * @dev This event is emitted when the final amount of a POT is changed. It is registered by the payment adapter and
-     *      causes a change of the final amount of the POT in its database.
-     * @param finalAmount which will be updated in the payment adapter.
-     */
-    event ChangeFinalAmount(
-        uint256 indexed tokenId,
-        uint256 finalAmount,
-        string currency);
-
     /** @dev Sets baseURI for all POTs. */
     constructor(string memory name, string memory symbol, string memory baseURI) ERC721(name, symbol)
     {
