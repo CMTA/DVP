@@ -95,9 +95,11 @@ describe("DVP.setPotAddress", function () {
     console.log("dvp.address = " + dvp.address)
     console.log("pot.address = " + pot.address)
 
-    await dvp.setPotAddress(sender.address) // just a valid address
-    const address = await dvp.getPotAddress()
+    // set a valid address (it does not matter that it's not a POT) to test the event and the changed address
+    await expect(await dvp.setPotAddress(sender.address)).to.emit(dvp, "POTAddressChanged").withArgs(
+      sender.address)
 
+    const address = await dvp.getPotAddress()
     expect(address).to.be.eq(sender.address)
   })
 
