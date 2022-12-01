@@ -107,13 +107,13 @@ describe("DVP Pauseability", function () {
     await at.connect(receiver).increaseAllowance(dvp.address, 111)
     await at.mint(receiver.address, 7)
 
-    let paused = await dvp.paused()
-    console.log("[TEST] Is DVP initially paused? " + paused)
+    let isPaused = await dvp.paused()
+    console.log("[TEST] Is DVP initially paused? " + isPaused)
 
     console.log("[TEST] Pausing DVP")
     await dvp.pause()
-    paused = await dvp.paused()
-    console.log("Is DVP paused? " + paused)
+    isPaused = await dvp.paused()
+    console.log("Is DVP paused? " + isPaused)
 
     console.log("[TEST] Calling dvp.checkDeliveryForPot")
     await expect(dvp.checkDeliveryForPot(token1.tokenId)).to.be.revertedWith("Pausable: paused")
