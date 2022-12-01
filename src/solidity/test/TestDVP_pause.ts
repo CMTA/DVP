@@ -117,5 +117,15 @@ describe("DVP Pauseability", function () {
 
     console.log("[TEST] Calling dvp.checkDeliveryForPot")
     await expect(dvp.checkDeliveryForPot(token1.tokenId)).to.be.revertedWith("Pausable: paused")
+
+    // even a subsequent pause() call is reverted
+    await expect(dvp.pause()).to.be.revertedWith("Pausable: paused")
+
+    await dvp.unpause()
+    isPaused = await dvp.paused()
+    console.log("Is DVP paused? " + isPaused)
+
+    console.log("[TEST] Calling dvp.checkDeliveryForPot")
+    // must pass
   })
 })
