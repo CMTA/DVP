@@ -12,33 +12,9 @@ DVP.sol can interact with any smart contract that implements the `IERC20Upgradea
 
 targens provides a Payment Order Token (Interface: src/solidity/contracts/POT/IPOT.sol) that is agnostic of other contracts expect for the OpenZeppelin ones and logging support.
 
-It comes with its own test: TestPOT.ts
 
-
-
-## Setup
-
-The commands below are supposed to be executed in the `src/solidity` folder.
-
-For compilation, tests and deployment, hardhat (https://hardhat.org) is used.
-
-### Installation
-
-- `npm install` // installs hardhat, ethers and other tools defined in package.json
-
-### Compilation and Test
-
-- `npx hardhat compile` // uses hardhat.config.ts
-- `npx hardhat test` (runs all tests)
-- `npx hardhat test test/TestDVP_checkDeliveryForPot_1.ts` (runs tests from individual file)
 
 ### Deployment
-
-#### On hardhat
-
-The smart contracts can be deployed on hardhat itself:
-
-`npx hardhat deploy_all_contracts` // uses scripts/deploy_contracts.ts
 
 #### On Ganache
 

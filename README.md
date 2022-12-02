@@ -2,16 +2,16 @@
 
 The commands below must be executed in the `src/solidity` folder.
 
-### Setup
+For compilation, tests and deployment, hardhat (https://hardhat.org) is used.
 
-- `npm install`
+### Installation
 
-Uses package.json.
+- `npm install` // installs hardhat, ethers and other tools defined in package.json
 
 ### Compilation and Test
 
-- `npx hardhat compile`
-- `npx hardhat test`
+- `npx hardhat compile` // uses hardhat.config.ts
+- `npx hardhat test` (runs all tests)
+- `npx hardhat test test/TestDVP_checkDeliveryForPot_1.ts` (runs tests from individual file)
 
-Uses hardhat.config.ts.
-
+### 
