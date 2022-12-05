@@ -276,7 +276,7 @@ ERC721HolderUpgradeable
     }
 
     /**
-     * Deactivates a POT held by the DvP if it is older than 4 days.
+     * @dev Deactivates a POT held by the DvP if it is older than 4 days.
      */
     function deactivateOldPot(uint256 tokenId)
     external
