@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.15 <0.9.0;
+pragma solidity 0.8.17;
 
 // #def LOG false
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol";
 import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
@@ -53,65 +52,6 @@ ERC721Pausable
     mapping(uint256 => bool) internal _minted;
 
     using Strings for uint256;
-
-    /**
-     * @dev The payment adapter detects this event and initiates the associated bank transfer
-     * @param tokenId, sender, receiver, businessId, dealDetailNum, dealDetailNum2, dealDetailAddress, finalAmount, currency and tokenURI of POT
-     */
-    event PaymentInitiated(
-        uint256 indexed tokenId,
-        address indexed sender,
-        address indexed receiver,
-        string businessId,
-        uint256 dealDetailNum,
-        uint256 dealDetailNum2,
-        address dealDetailAddress,
-        uint256 finalAmount,
-        string currency,
-        string tokenURI);
-
-    /**
-     * @dev This event is emitted when the payment adapter confirms the payment associated with the POT.
-     *      It can be used to trigger deliveries in a DvP setup.
-     * @param tokenId, sender, receiver, businessId, dealDetailNum, dealDetailNum2, dealDetailAddress, finalAmount, currency and tokenURI of POT
-     */
-    event PaymentConfirmed(
-        uint256 indexed tokenId,
-        address indexed sender,
-        address indexed receiver,
-        string businessId,
-        uint256 dealDetailNum,
-        uint256 dealDetailNum2,
-        address dealDetailAddress,
-        uint256 finalAmount,
-        string currency,
-        string tokenURI);
-
-    /**
-     * @dev This event is emitted when a Pot is deactivated by its owner.
-     * @param tokenId, sender, receiver, businessId, dealDetailNum, dealDetailNum2, dealDetailAddress, finalAmount, currency and tokenURI of POT
-     */
-    event PotDeactivated(
-        uint256 indexed tokenId,
-        address indexed sender,
-        address indexed receiver,
-        string businessId,
-        uint256 dealDetailNum,
-        uint256 dealDetailNum2,
-        address dealDetailAddress,
-        uint256 finalAmount,
-        string currency,
-        string tokenURI);
-
-    /**
-    * @dev This event is emitted when the final amount of a POT is changed. It is registered by the payment adapter and
-    *      causes a change of the final amount of the POT in its database.
-    * @param finalAmount which will be updated in the payment adapter.
-    */
-    event ChangeFinalAmount(
-        uint256 indexed tokenId,
-        uint256 finalAmount,
-        string currency);
 
     /** @dev Sets baseURI for all POTs. */
     constructor(string memory name, string memory symbol, string memory baseURI) ERC721(name, symbol)
@@ -246,23 +186,23 @@ ERC721Pausable
 
     /**
      * @dev Changes the status of the POT to 'PaymentInitiated' and emits the 'PaymentInitiated' event.
-     * @param tokenId ID of the POT
+     * @param _tokenId ID of the POT
      */
     function initiatePayment(
-        uint256 tokenId
-        )
+        uint256 _tokenId
+    )
     external
     whenNotPaused()
     {
         //Check that message sender is owner of POT and that POT has status 'Issued'
-        require(_isApprovedOrOwner(_msgSender(), tokenId), "Message sender is not owner nor approved for POT");
-        require(idToBusiness[tokenId].status == potStatus.Issued, "POT does not have status 'Issued'");
+        require(_isApprovedOrOwner(_msgSender(), _tokenId), "Message sender is not owner nor approved for POT");
+        require(idToBusiness[_tokenId].status == potStatus.Issued, "POT does not have status 'Issued'");
         //Change status of POT to 'PaymentInitiated'
-        Business storage business = idToBusiness[tokenId];
+        Business storage business = idToBusiness[_tokenId];
         business.status = potStatus.PaymentInitiated;
         //Emit event PaymentInitiated
         emit PaymentInitiated(
-                tokenId,
+                _tokenId,
                 business.sender,
                 business.receiver,
                 business.businessId,
@@ -271,28 +211,28 @@ ERC721Pausable
                 business.dealDetailAddress,
                 business.finalAmount,
                 business.currency,
-                tokenURI(tokenId));
+                tokenURI(_tokenId));
     }
 
     /**
-    * @dev Changes the status of the POT to 'PaymentConfirmed' and emits the 'PaymentConfirmed' event.
-    * @param tokenId ID of the POT
-    */
+     * @dev Changes the status of the POT to 'PaymentConfirmed' and emits the 'PaymentConfirmed' event.
+     * @param _tokenId ID of the POT
+     */
     function confirmPayment(
-        uint256 tokenId
+        uint256 _tokenId
     )
     external
     onlyOwner
     whenNotPaused()
     {
         //Check that POT has status 'PaymentInitiated'
-        require(idToBusiness[tokenId].status == potStatus.PaymentInitiated, "POT does not have status 'PaymentInitiated'");
+        require(idToBusiness[_tokenId].status == potStatus.PaymentInitiated, "POT does not have status 'PaymentInitiated'");
         //Change status of POT to 'PaymentConfirmed'
-        Business storage business = idToBusiness[tokenId];
+        Business storage business = idToBusiness[_tokenId];
         business.status = potStatus.PaymentConfirmed;
         //Emit event PaymentConfirmed
         emit PaymentConfirmed(
-                tokenId,
+                _tokenId,
                 business.sender,
                 business.receiver,
                 business.businessId,
@@ -301,28 +241,28 @@ ERC721Pausable
                 business.dealDetailAddress,
                 business.finalAmount,
                 business.currency,
-                tokenURI(tokenId));
+                tokenURI(_tokenId));
     }
 
     /**
      * @dev Changes the status of the POT to 'Deactivated' and emits the 'PotDeactivated' event.
-     * @param tokenId ID of the POT
+     * @param _tokenId ID of the POT
      */
     function deactivatePot(
-        uint256 tokenId
+        uint256 _tokenId
     )
     external
     whenNotPaused()
     {
         //Check that message sender is owner of POT and that POT does not have status 'Deactivated'
-        require(_isApprovedOrOwner(_msgSender(), tokenId), "Message sender is not owner nor approved for POT");
-        if (idToBusiness[tokenId].status == potStatus.Deactivated) {revert("POT already has status 'Deactivated'");}
+        require(_isApprovedOrOwner(_msgSender(), _tokenId), "Message sender is not owner nor approved for POT");
+        if (idToBusiness[_tokenId].status == potStatus.Deactivated) {revert("POT already has status 'Deactivated'");}
         //Change status of POT to 'Deactivated'
-        Business storage business = idToBusiness[tokenId];
+        Business storage business = idToBusiness[_tokenId];
         business.status = potStatus.Deactivated;
         //Emit event PotDeactivated
         emit PotDeactivated(
-                tokenId,
+                _tokenId,
                 business.sender,
                 business.receiver,
                 business.businessId,
@@ -331,7 +271,7 @@ ERC721Pausable
                 business.dealDetailAddress,
                 business.finalAmount,
                 business.currency,
-                tokenURI(tokenId));
+                tokenURI(_tokenId));
     }
 
     /**
@@ -378,19 +318,19 @@ ERC721Pausable
         return ownerToTokenIds[owner];
     }
 
-    function changeAmount(uint256 tokenId, uint256 amount)
+    function changeAmount(uint256 _tokenId, uint256 amount)
     external
     whenNotPaused()
     {
-        _changeFinalAmount(tokenId, amount);
+        _changeFinalAmount(_tokenId, amount);
     }
 
     /**
-    * @dev Changes final amount of the NFT.
-    * @notice Changes the final amount. This can be only done by the receiver of the NFT
-    *         and can only be less than the initial amount.
-    * @param _tokenId and _amount to change the final amount variable
-    */
+     * @dev Changes final amount of the NFT.
+     * @notice Changes the final amount. This can be only done by the receiver of the NFT
+     *         and can only be less than the initial amount.
+     * @param _tokenId and _amount to change the final amount variable
+     */
     function _changeFinalAmount(uint256 _tokenId, uint256 _amount)
     internal
     onlyReceiver(_tokenId)
@@ -560,6 +500,38 @@ ERC721Pausable
         return idToBusiness[_tokenId].mintTime;
     }
 
+    function getStatusAndMintTime(uint256 _tokenId)
+    external
+    view
+    returns (potStatus, uint256)
+    {
+        return (idToBusiness[_tokenId].status, idToBusiness[_tokenId].mintTime);
+    }
+
+    function getDetails(uint256 _tokenId)
+    external
+    view
+    returns (potStatus, address, address, uint256, address)
+    {
+        return (idToBusiness[_tokenId].status,
+                ownerOf(_tokenId),
+                idToBusiness[_tokenId].dealDetailAddress,
+                idToBusiness[_tokenId].dealDetailNum,
+                idToBusiness[_tokenId].receiver);
+    }
+
+    function getDetailsForDelivery(uint256 _tokenId)
+    external
+    view
+    returns (potStatus, address, address, uint256, address)
+    {
+        return (idToBusiness[_tokenId].status,
+                ownerOf(_tokenId),//  = IPOT(potAddress).ownerOf(tokenId);
+                idToBusiness[_tokenId].dealDetailAddress,
+                idToBusiness[_tokenId].dealDetailNum,
+                idToBusiness[_tokenId].sender);
+    }
+
     function getVersion()
     external
     pure
@@ -583,11 +555,11 @@ ERC721Pausable
     }
 
     /**
-    * Removes a specific value from an array.
-    * Replaces the value to be removed by the last entry in the list and popping the last value from the list afterwards.
-    *
-    * IMPORTANT: Order of elements in the array changes
-    */
+     * Removes a specific value from an array.
+     * Replaces the value to be removed by the last entry in the list and popping the last value from the list afterwards.
+     *
+     * IMPORTANT: Order of elements in the array changes
+     */
     function _remove(uint256 valueToFindAndRemove, uint256[] storage array)
     internal
     {
