@@ -7,10 +7,8 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import "../POT/IPOT.sol";
 
@@ -34,7 +32,7 @@ ERC721HolderUpgradeable
 // #endif
 {
     /** Address of POT SC. Set in initialize function. */
-    address private potAddress;
+    IPOT private potAddress;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -44,16 +42,16 @@ ERC721HolderUpgradeable
     /**
      * @dev For upgradeability, this function replaces the constructor
      */
-    function initialize(address _potAddress)
+    function initialize(IPOT _potAddress)
     public
     initializer
     {
         // #if LOG
         console.log("[DVP] Initializing DVP");
         // #endif
-        __Pausable_init();
-        __Ownable_init();
-        __UUPSUpgradeable_init();
+        __Pausable_init_unchained();
+        __Ownable_init_unchained();
+        __UUPSUpgradeable_init_unchained();
 
         potAddress = _potAddress;
     }
@@ -62,22 +60,30 @@ ERC721HolderUpgradeable
     internal
     onlyOwner
     override
-    {}
+    {
+        // Overrides virtual function from UUPSUpgradeable.sol.
+        // No implementation; access control is relevant.
+    }
 
     /**
      * @dev Logs the confirmation of the delivery of a valid POT and the associated AT to the DvP.
      */
-    event DeliveryConfirmed(uint256 indexed _tokenId, address _numAt);
+    event DeliveryConfirmed(uint256 indexed tokenId, address indexed assetTokenAddress);
 
     /**
      * @dev Logs the execution of the delivery of AT to the sender of a valid POT.
      */
-    event DeliveryExecuted(uint256 indexed _tokenId, address _numAt, address to);
+    event DeliveryExecuted(uint256 indexed tokenId, address indexed assetTokenAddress, address indexed to);
 
     /**
      * @dev Logs the cancellation of the settlement of a POT.
      */
-    event SettlementCanceled(uint256 indexed _tokenId, address _numAt, address to);
+    event SettlementCanceled(uint256 indexed tokenId, address indexed assetTokenAddress, address indexed to);
+
+    /**
+     * @dev Logs change of the POT address.
+     */
+    event POTAddressChanged(IPOT indexed potAddress);
 
     /**
      * Checks, for a specific POT, that
@@ -89,11 +95,14 @@ ERC721HolderUpgradeable
     external
     whenNotPaused()
     {
-        address owner = IPOT(potAddress).ownerOf(tokenId);
-        IPOT.potStatus potStatus = IPOT(potAddress).getStatus(tokenId);
-
         // #if LOG
         console.log("[DVP] DVP.checkDeliveryForPot(", tokenId, ")");
+        // #endif
+
+        (IPOT.potStatus potStatus, address owner, address assetTokenAddress, uint256 numAssetTokensForSettlement,
+            address receiver) = IPOT(potAddress).getDetails(tokenId);
+
+        // #if LOG
         console.log("[DVP] owner:", nice(owner), "Status:", Log.statusToString(potStatus));
         // #endif
 
@@ -111,37 +120,14 @@ ERC721HolderUpgradeable
         console.log("[DVP] DvP is owner of the POT");
         // #endif
 
-        address assetTokenAddress = IPOT(potAddress).getDealDetailAddress(tokenId);
-        // receiver is owner, address(this) = DVP is spender
-        address receiver = IPOT(potAddress).getReceiver(tokenId);
-        uint256 allowance = IERC20Upgradeable(assetTokenAddress).allowance(receiver, address(this));
-        // DealDetailNum contains the number of AssetTokens needed for settlement
-        uint256 numAssetTokensForSettlement = IPOT(potAddress).getDealDetailNum(tokenId);
-        uint256 numAssetTokensOfReceiver = IERC20Upgradeable(assetTokenAddress).balanceOf(receiver);
-
         // #if LOG
-        console.log("\n[DVP] Balances before token transfer:");
+        console.log("\n[DVP] Balances before token transfer to DvP:");
         logBalances(tokenId);
         // #endif
 
-        // if the number of tokens needed exceeds the allowance, revert
-        if (numAssetTokensForSettlement > allowance) {
-            revert(string.concat("Allowance ", Strings.toString(allowance), " not sufficient to settle POT ",
-                Strings.toString(tokenId), ". Allowance of minimum ", Strings.toString(numAssetTokensForSettlement), " needed."));
-        }
-
-        // if the receiver's balance is less than required, revert
-        if (numAssetTokensOfReceiver < numAssetTokensForSettlement) {
-            revert(string.concat("Balance ", Strings.toString(numAssetTokensOfReceiver), " of receiver not sufficient to settle POT ",
-                Strings.toString(tokenId), ". Balance of minimum ", Strings.toString(numAssetTokensForSettlement), " needed."));
-        }
-
-        // #if LOG
-        console.log("\n[DVP] Number of asset tokens for settlement is not larger than allowance, receiver holds enough tokens, so transferring the tokens to DvP");
-        // #endif
-
         // transfer AT from receiver to DvP
-        IERC20Upgradeable(assetTokenAddress).transferFrom(receiver, address(this), numAssetTokensForSettlement);
+        bool transferOK = IERC20(assetTokenAddress).transferFrom(receiver, address(this), numAssetTokensForSettlement);
+        require(transferOK, "Token transfer failed.");
 
         // #if LOG
         console.log("\n[DVP] Balances after token transfer:");
@@ -167,8 +153,10 @@ ERC721HolderUpgradeable
     external
     whenNotPaused()
     {
+        (IPOT.potStatus potStatus, address owner, address assetTokenAddress,
+            uint256 numAssetTokensForSettlement, address sender) = IPOT(potAddress).getDetailsForDelivery(tokenId);
+
         // if the POT is not in "Payment Confirmed" status, revert
-        IPOT.potStatus potStatus = IPOT(potAddress).getStatus(tokenId);
         if (potStatus != IPOT.potStatus.PaymentConfirmed) {
             revert(string.concat("POT ", Strings.toString(tokenId), " does not have status 'Payment Confirmed'."));
         }
@@ -177,29 +165,15 @@ ERC721HolderUpgradeable
         // #endif
 
         // require that DvP has ownership over the POT
-        address owner = IPOT(potAddress).ownerOf(tokenId);
         require(owner == address(this), string.concat("DvP is not owner of POT ", Strings.toString(tokenId)));
         // #if LOG
         console.log("[DVP] DvP is owner of the POT");
         // #endif
 
-        // DealDetailAddress contains the AT contract address
-        address assetTokenAddress = IPOT(potAddress).getDealDetailAddress(tokenId);
-        uint256 numAssetTokensOfDvP = IERC20Upgradeable(assetTokenAddress).balanceOf(address(this));
-        // DealDetailNum contains the number of AT to be delivered in exchange for the POT
-        uint256 numAssetTokensForSettlement = IPOT(potAddress).getDealDetailNum(tokenId);
-        address sender = IPOT(potAddress).getSender(tokenId);
-
         // #if LOG
         console.log("\n[DVP] Balances before transferring Asset Tokens from DVP to sender:");
         logBalances(tokenId);
         // #endif
-
-        // if the number of AT in escrow is smaller than the number of AT held by the DvP, revert
-        if (numAssetTokensOfDvP < numAssetTokensForSettlement) {
-            revert(string.concat("AT-Balance ", Strings.toString(numAssetTokensOfDvP), " not sufficient for delivery. Minimum ",
-                Strings.toString(numAssetTokensForSettlement), " needed."));
-        }
 
         IPOT(potAddress).deactivatePot(tokenId);
 
@@ -208,7 +182,8 @@ ERC721HolderUpgradeable
         // #endif
 
         // transfer the ATs to the sender (of money)
-        IERC20Upgradeable(assetTokenAddress).transfer(sender, numAssetTokensForSettlement);
+        bool transferOK = IERC20(assetTokenAddress).transfer(sender, numAssetTokensForSettlement);
+        require(transferOK, "Token transfer failed.");
 
         // #if LOG
         console.log("\n[DVP] Balances after token transfer:");
@@ -226,10 +201,10 @@ ERC721HolderUpgradeable
         console.log("[DVP] numAssetTokensForSettlement:", IPOT(potAddress).getDealDetailNum(tokenId));
         address assetTokenAddress = IPOT(potAddress).getDealDetailAddress(tokenId);
         address receiver = IPOT(potAddress).getReceiver(tokenId);
-        console.log("[DVP] allowance                  :", IERC20Upgradeable(assetTokenAddress).allowance(receiver, address(this)));
-        console.log("[DVP] numAssetTokensOfReceiver   :", IERC20Upgradeable(assetTokenAddress).balanceOf(receiver));
-        console.log("[DVP] numAssetTokensOfSender     :", IERC20Upgradeable(assetTokenAddress).balanceOf(IPOT(potAddress).getSender(tokenId)));
-        console.log("[DVP] numAssetTokensOfDvP        :", IERC20Upgradeable(assetTokenAddress).balanceOf(address(this)));
+        console.log("[DVP] allowance                  :", IERC20(assetTokenAddress).allowance(receiver, address(this)));
+        console.log("[DVP] numAssetTokensOfReceiver   :", IERC20(assetTokenAddress).balanceOf(receiver));
+        console.log("[DVP] numAssetTokensOfSender     :", IERC20(assetTokenAddress).balanceOf(IPOT(potAddress).getSender(tokenId)));
+        console.log("[DVP] numAssetTokensOfDvP        :", IERC20(assetTokenAddress).balanceOf(address(this)));
     }
     // #endif
 
@@ -241,36 +216,27 @@ ERC721HolderUpgradeable
     whenNotPaused()
     onlyOwner
     {
+        (IPOT.potStatus potStatus, address owner, address assetTokenAddress, uint256 numAssetTokensForSettlement,
+            address receiver) = IPOT(potAddress).getDetails(tokenId);
+
         // if the POT is not in "Payment Initiated" status, revert
-        IPOT.potStatus potStatus = IPOT(potAddress).getStatus(tokenId);
         if (potStatus != IPOT.potStatus.PaymentInitiated) {
             revert(string.concat("POT ", Strings.toString(tokenId), " does not have status 'Payment Initiated'."));
         }
 
         // require that DvP has ownership over the POT
-        address owner = IPOT(potAddress).ownerOf(tokenId);
         require(owner == address(this), string.concat("DvP is not owner of POT ", Strings.toString(tokenId)));
 
-        address assetTokenAddress = IPOT(potAddress).getDealDetailAddress(tokenId);
-        uint256 numAssetTokensOfDvP = IERC20Upgradeable(assetTokenAddress).balanceOf(address(this));
-        // DealDetailNum contains the number of AT to be delivered in exchange for the POT
-        uint256 numAssetTokensForSettlement = IPOT(potAddress).getDealDetailNum(tokenId);
         // #if LOG
         logBalances(tokenId);
         // #endif
-
-        // if the number of AT in escrow is too small, revert
-        if (numAssetTokensOfDvP < numAssetTokensForSettlement) {
-            revert(string.concat("AT-Balance ", Strings.toString(numAssetTokensOfDvP), " not sufficient for delivery. Minimum ",
-                Strings.toString(numAssetTokensForSettlement), " needed."));
-        }
 
         // change POT status to "Deactivated"
         IPOT(potAddress).deactivatePot(tokenId);
 
         // send the number of AT to the receiver (of money) address
-        address receiver = IPOT(potAddress).getReceiver(tokenId);
-        IERC20Upgradeable(assetTokenAddress).transfer(receiver, numAssetTokensForSettlement);
+        bool transferOK = IERC20(assetTokenAddress).transfer(receiver, numAssetTokensForSettlement);
+        require(transferOK, "Token transfer failed.");
 
         // #if LOG
         console.log("\n[DVP] Emitting SettlementCanceled event");
@@ -286,14 +252,14 @@ ERC721HolderUpgradeable
     whenNotPaused()
     onlyOwner
     {
+        (IPOT.potStatus potStatus, uint256 mintTime) = IPOT(potAddress).getStatusAndMintTime(tokenId);
+
         // if the POT is not in "Issued" status, revert
-        IPOT.potStatus potStatus = IPOT(potAddress).getStatus(tokenId);
         if (potStatus != IPOT.potStatus.Issued) {
             revert(string.concat("POT ", Strings.toString(tokenId), " does not have status 'Issued'."));
         }
 
         // if the POT is not older than 4 days, revert
-        uint256 mintTime = IPOT(potAddress).getMintTime(tokenId);
         uint256 potAge = block.timestamp - mintTime; // Note: "now" has been deprecated. Use "block.timestamp" instead.
         if (potAge < 4 days) {
             revert(string.concat("POT ", Strings.toString(tokenId), " is not older than 96 hours."));
@@ -305,11 +271,14 @@ ERC721HolderUpgradeable
     /**
      * Sets the potAddress.
      */
-    function setPotAddress(address _potAddress)
+    function setPotAddress(IPOT _potAddress)
     external
     onlyOwner
     {
-        potAddress = _potAddress;
+        if (potAddress != _potAddress) {
+            potAddress = _potAddress;
+            emit POTAddressChanged(potAddress);
+        }
     }
 
     /**
@@ -318,7 +287,7 @@ ERC721HolderUpgradeable
     function getPotAddress()
     public
     view
-    returns (address)
+    returns (IPOT)
     {
         return potAddress;
     }
