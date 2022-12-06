@@ -7,11 +7,13 @@ import '@openzeppelin/hardhat-upgrades'
 /**
  * Deploys DVP-Contract to the network configured via hardhat.
  * @param hre
+ * @param single (only for logging)
+ * @param potAddress
  */
-export async function deployDVP(hre: HardhatRuntimeEnvironment, single: boolean, pot_address: string) {
-    console.log("DVP will be initialized with POT at " + pot_address)
+export async function deployDVP(hre: HardhatRuntimeEnvironment, single: boolean, potAddress: string) {
+    console.log("DVP will be initialized with POT at " + potAddress)
     return await deployUpgradeableContract(hre, single, "cache/solpp-generated-contracts/DVP.sol:DVP", "DVP",
-        pot_address)
+        potAddress)
 }
 
 /**
@@ -48,11 +50,14 @@ async function upgradeContract(hre: HardhatRuntimeEnvironment, contractName: str
  * @param name only for logging
  * @param ...args optional initializer parameters
  */
-async function deployUpgradeableContract(hre: HardhatRuntimeEnvironment, single, contractName: string, name: string,
-        ...args: Array<any>) {
-    const contractFactory = await hre.ethers.getContractFactory(contractName);
+async function deployUpgradeableContract(hre: HardhatRuntimeEnvironment,
+                                         single: boolean,
+                                         contractName: string,
+                                         name: string,
+                                         ...args: Array<any>) {
+    const contractFactory = await hre.ethers.getContractFactory(contractName)
     const contract = await hre.upgrades.deployProxy(contractFactory, [...args], {
-        initializer: "initialize"});
+        initializer: "initialize"})
     await contract.deployed()
 
     let padding = single ? name.length : 5
