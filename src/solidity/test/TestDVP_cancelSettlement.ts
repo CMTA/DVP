@@ -280,6 +280,6 @@ describe("DVP.cancelSettlement", function () {
     console.log("\n[TEST] POT state after pot.confirmPayment:" + await pot.statusToString(potStatus) + " (" + potStatus + ")")
     expect(potStatus).to.equal(1) // 1 = PaymentInitiated
 
-    await expect(dvp.cancelSettlement(token1.tokenId)).to.be.revertedWith("AT-Balance 1 not sufficient for delivery. Minimum 2 needed.")
+    await expect(dvp.cancelSettlement(token1.tokenId)).to.be.revertedWith("reverted with reason string 'ERC20: transfer amount exceeds balance")
   })
 })

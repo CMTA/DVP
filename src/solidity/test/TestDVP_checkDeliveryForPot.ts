@@ -140,13 +140,13 @@ describe("DVP.checkDeliveryForPot", function () {
       receiver.address)
 
     // (5) No allowance was set, so there must be the following error
-    await expect(dvp.checkDeliveryForPot(token1.tokenId)).to.be.revertedWith("Allowance 0 not sufficient to settle POT 1. Allowance of minimum 2 needed.")
+    await expect(dvp.checkDeliveryForPot(token1.tokenId)).to.be.revertedWith("reverted with reason string 'ERC20: insufficient allowance'")
 
     // set the allowance to 1
     await at.connect(receiver).increaseAllowance(dvp.address, 1)
 
     // still not enough
-    await expect(dvp.checkDeliveryForPot(token1.tokenId)).to.be.revertedWith("Allowance 1 not sufficient to settle POT 1. Allowance of minimum 2 needed.")
+    await expect(dvp.checkDeliveryForPot(token1.tokenId)).to.be.revertedWith("reverted with reason string 'ERC20: insufficient allowance'")
 
     // increase the allowance to 3
     await at.connect(receiver).increaseAllowance(dvp.address, 2)
@@ -173,7 +173,7 @@ describe("DVP.checkDeliveryForPot", function () {
     // increase the allowance to 2
     await at.connect(receiver).increaseAllowance(dvp.address, 20)
 
-    await expect(dvp.checkDeliveryForPot(token1.tokenId)).to.be.revertedWith("Balance 0 of receiver not sufficient to settle POT 1. Balance of minimum 10 needed.")
+    await expect(dvp.checkDeliveryForPot(token1.tokenId)).to.be.revertedWith("reverted with reason string 'ERC20: transfer amount exceeds balance'")
   })
 
   it("Tests that the correct amount of ATs is transferred to the DVP.", async function () {
