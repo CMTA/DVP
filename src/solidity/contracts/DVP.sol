@@ -96,7 +96,7 @@ ERC721HolderUpgradeable
      * @dev Checks, for a specific POT, that
      * (1) the POT is owned by the DvP and
      * (2) the DvP has a sufficient allowance for the AT of the receiver to settle the POT.
-     * Then transfers the AT to its own address, initiates the payment tied to the POT and emits DeliveryConfirmed event.
+     * Then transfers the AT to its own address, initiates the payment tied to the POT and emits a DeliveryConfirmed event.
      */
     function checkDeliveryForPot(uint256 tokenId)
     external
@@ -154,7 +154,7 @@ ERC721HolderUpgradeable
      * @dev Checks, for a specific POT, that
      * (1) the status of the POT is "Payment confirmed" and
      * (2) the DvP is owner of the POT.
-     * Then sends the number of AT stated in the POT to the sender (of money) stated in the POT and emits DeliveryExecuted event.
+     * Then sends the number of AT stated in the POT to the sender (of money) stated in the POT and emits a DeliveryExecuted event.
      */
     function executeDelivery(uint256 tokenId)
     external
@@ -216,7 +216,7 @@ ERC721HolderUpgradeable
     // #endif
 
     /**
-     * @dev Sends the AT back to the seller and deactivates the POT. Emits SettlementCanceled.
+     * @dev Sends the AT back to the seller and deactivates the POT. Emits a SettlementCanceled event.
      */
     function cancelSettlement(uint256 tokenId)
     external
@@ -276,7 +276,7 @@ ERC721HolderUpgradeable
     }
 
     /**
-     * @dev Sets the potAddress. Emits POTAddressChanged event.
+     * @dev Sets the potAddress. Emits a POTAddressChanged event.
      */
     function setPotAddress(IPOT _potAddress)
     external
