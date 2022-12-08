@@ -9,7 +9,7 @@ import "@nomiclabs/hardhat-solpp";
 import "hardhat-gas-reporter";
 import '@openzeppelin/hardhat-upgrades';
 import "@nomiclabs/hardhat-etherscan";
-require('hardhat-docgen');
+
 
 const { types } = require("hardhat/config")
 
@@ -114,11 +114,6 @@ const config: HardhatUserConfig = {
   //Doku for configuration at https://github.com/cgewecke/hardhat-gas-reporter
   gasReporter: {
     enabled: false, // set to true for gas report
-  },
-  docgen: {
-    path: './docs',
-    clear: true,
-    runOnCompile: true,
   }
 };
 
