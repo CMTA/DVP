@@ -18,6 +18,16 @@ import "hardhat/console.sol";
 // #endif
 
 
+
+/**
+ * @title DvP (Delivery versus Payment)
+ * @dev The DvP smart contract interacts with an Asset Token smart contract (Delivery) and a Payment Order Token smart contract (Payment).
+ * Its task is to
+ * - receive the Payment Order Token
+ * - transfer the Asset Token(s) from the wallet of the seller to itself
+ * - initiate the payment promised by the POT and
+ * - after receiving the confirmation of payment, sending the AT to the wallet of the buyer
+ */
 contract DVP is
 Initializable,
 PausableUpgradeable,
@@ -83,10 +93,10 @@ ERC721HolderUpgradeable
     event POTAddressChanged(IPOT indexed potAddress);
 
     /**
-     * Checks, for a specific POT, that
+     * @dev Checks, for a specific POT, that
      * (1) the POT is owned by the DvP and
      * (2) the DvP has a sufficient allowance for the AT of the receiver to settle the POT.
-     * Then transfers the AT to its own address and initiates the payment tied to the POT.
+     * Then transfers the AT to its own address, initiates the payment tied to the POT and emits a DeliveryConfirmed event.
      */
     function checkDeliveryForPot(uint256 tokenId)
     external
@@ -141,10 +151,10 @@ ERC721HolderUpgradeable
     }
 
     /**
-     * Checks, for a specific POT, that
+     * @dev Checks, for a specific POT, that
      * (1) the status of the POT is "Payment confirmed" and
      * (2) the DvP is owner of the POT.
-     * Then sends the number of AT stated in the POT to the sender (of money) stated in the POT.
+     * Then sends the number of AT stated in the POT to the sender (of money) stated in the POT and emits a DeliveryExecuted event.
      */
     function executeDelivery(uint256 tokenId)
     external
@@ -206,7 +216,7 @@ ERC721HolderUpgradeable
     // #endif
 
     /**
-     * Sends the AT back to the seller and deactivates the POT.
+     * @dev Sends the AT back to the seller and deactivates the POT. Emits a SettlementCanceled event.
      */
     function cancelSettlement(uint256 tokenId)
     external
@@ -242,7 +252,7 @@ ERC721HolderUpgradeable
     }
 
     /**
-     * Deactivates a POT held by the DvP if it is older than 4 days.
+     * @dev Deactivates a POT held by the DvP if it is older than 4 days.
      */
     function deactivateOldPot(uint256 tokenId)
     external
@@ -266,7 +276,7 @@ ERC721HolderUpgradeable
     }
 
     /**
-     * Sets the potAddress.
+     * @dev Sets the potAddress. Emits a POTAddressChanged event.
      */
     function setPotAddress(IPOT _potAddress)
     external
@@ -279,7 +289,7 @@ ERC721HolderUpgradeable
     }
 
     /**
-     * Returns the potAddress.
+     * @dev Returns the potAddress.
      */
     function getPotAddress()
     public
