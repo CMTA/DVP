@@ -362,30 +362,30 @@ ERC721Pausable
     /**
      * Additional actions needed after transfer, minting or burning of tokens.
      */
-    function _afterTokenTransfer(address from, address to, uint256 tokenId)
+    function _afterTokenTransfer(address from, address to, uint256 firstTokenId, uint256 batchSize)
     internal
     virtual override
     {
         // #if LOG
         console.log("[POT] _afterTokenTransfer: from =", nice(from));
-        console.log("[POT] _afterTokenTransfer: to =", nice(to), ", tokenId =", tokenId);
+        console.log("[POT] _afterTokenTransfer: to =", nice(to), ", firstTokenId =", firstTokenId);
         // #endif
         if (from == address(0)) {
             // Minting
-            ownerToTokenIds[to].push(tokenId);
+            ownerToTokenIds[to].push(firstTokenId);
             // #if LOG
             console.log("[POT] Minted");
             // #endif
         } else if (to == address(0)) {
             // Burning
-            _remove(tokenId, ownerToTokenIds[from]);
+            _remove(firstTokenId, ownerToTokenIds[from]);
             // #if LOG
             console.log("[POT] Burnt");
             // #endif
         } else {
             // Transfer
-            _remove(tokenId, ownerToTokenIds[from]);
-            ownerToTokenIds[to].push(tokenId);
+            _remove(firstTokenId, ownerToTokenIds[from]);
+            ownerToTokenIds[to].push(firstTokenId);
             // #if LOG
             console.log("[POT] Transferred to", nice(to));
             // #endif
